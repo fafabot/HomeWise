@@ -47,6 +47,8 @@
     }
   ],
   "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
     ["waterBtn:1.l", "esp:D18", "green", ["h-80", "v-30"]],
     ["waterBtn:2.l", "esp:GND.1", "black", ["h-100", "v80"]],
     ["energyBtn:1.l", "esp:D19", "red", ["h-80", "v-30"]],
