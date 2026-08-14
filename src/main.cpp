@@ -119,7 +119,7 @@ void printReport() {
 }
 
 void setup() {
-  Serial.begin(SERIAL_BAUD);
+  Serial.begin(115200);
 
   Serial.println("================================");
   Serial.println("       HOMEWISE - ESP32");
