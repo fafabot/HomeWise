@@ -4,8 +4,9 @@
   "editor": "wokwi",
   "serialMonitor": {
     "display": "always",
+    "collapse": false,
     "newline": "lf",
-    "convertEol": true
+    "convertEol": false
   },
   "parts": [
     {
