@@ -43,3 +43,11 @@ void verificarDia() {
     }
   }
 }
+
+float obterAguaDoDia(int dia) {
+  if (dia < 1 || dia > 30) {
+    return -1.0;
+  }
+
+  return aguapdia[dia - 1];
+}
