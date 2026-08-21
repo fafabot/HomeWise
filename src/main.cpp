@@ -6,6 +6,7 @@
 #include "agua.h"
 #include "energia.h"
 #include "config.h"
+#include "historico.h"
 
 #define WATER_BUTTON 18
 #define ENERGY_BUTTON 19
@@ -124,7 +125,7 @@ void setup() {
 
   Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
 
-  momentoInicioDia = millis();
+
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("ERRO: OLED nao inicializado.");
@@ -142,6 +143,7 @@ void setup() {
 
   iniciarEnergia();
   iniciarAgua();
+  iniciarHistorico();
 
   Serial.println("Sistema pronto!");
 }
@@ -152,6 +154,7 @@ void loop() {
   atualizarAgua();
   atualizarEnergia();
   updateDisplay();
+  verificarDia();
 
   if (millis() - lastReport >= 2000) {
     lastReport = millis();
