@@ -131,6 +131,8 @@ void setup() {
 
   Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
 
+  momentoInicioDia = millis();
+
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("ERRO: OLED nao inicializado.");
   } else {
