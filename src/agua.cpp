@@ -13,7 +13,7 @@ float vazao = 0.0;
 const float PULSOS_POR_LITRO = 450.0;
 
 void IRAM_ATTR contarPulso() {
-    pulsosAgua++;
+    pulsosAgua += WATER_PULSES_PER_EVENT;
 }
 
 void iniciarAgua() {
