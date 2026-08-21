@@ -16,11 +16,6 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int PULSES_PER_PRESS = 10;
-
-volatile unsigned long totalWaterPulses = 0;
-float totalWaterLiters = 0.0;
-
 bool lastWaterButton = HIGH;
 bool lastEnergyButton = HIGH;
 
@@ -31,14 +26,12 @@ void handleWaterButton() {
   bool current = digitalRead(WATER_BUTTON);
 
   if (lastWaterButton == HIGH && current == LOW) {
-    totalWaterPulses += PULSES_PER_PRESS;
     atualizarAgua();
-    totalWaterLiters = obterLitros();
 
     Serial.print("[AGUA] Pulsos: ");
-    Serial.print(totalWaterPulses);
+    Serial.print(obterPulsos());
     Serial.print(" | Consumo: ");
-    Serial.print(totalWaterLiters, 3);
+    Serial.print(obterLitros(), 3);
     Serial.println(" L");
   }
 
