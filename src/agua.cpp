@@ -46,3 +46,11 @@ float obterVazao() {
 unsigned long obterPulsos() {
     return pulsosAgua;
 }
+
+
+
+void resetarConsumoDiarioAgua() {
+    pulsosAgua = 0;
+    litros = 0.0;
+    vazao = 0.0;
+}

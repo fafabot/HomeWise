@@ -11,4 +11,6 @@ float obterVazao();
 
 unsigned long obterPulsos();
 
+void resetarConsumoDiarioAgua();
+
 #endif
