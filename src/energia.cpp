@@ -53,3 +53,7 @@ float obterCorrente() { return corrente; }
 float obterPotencia() { return potencia; }
 float obterEnergia() { return energia; }
 bool cargaLigada() { return cargaLigadaEstado; }
+
+void resetarConsumoDiarioEnergia() {
+    energia = 0.0;
+}

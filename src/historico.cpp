@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include "agua.h"
+#include "energia.h"
 
 int diaatual = 1;
 unsigned long momentoInicioDia;
 
 float aguapdia[30];
+float energopdia[30];
 
 void iniciarHistorico() {
   momentoInicioDia = millis();
@@ -22,6 +24,7 @@ void verificarDia() {
 
   if (tempoDecorrido >= 10000) {
     aguapdia[diaatual - 1] = obterLitros();
+    energopdia[diaatual - 1] = obterEnergia();
 
     Serial.print("Dia ");
     Serial.print(diaatual);
@@ -32,6 +35,7 @@ void verificarDia() {
       momentoInicioDia = tempoAtual;
 
       resetarConsumoDiarioAgua();
+      resetarConsumoDiarioEnergia();
 
       Serial.print("Novo dia: ");
       Serial.println(diaatual);
