@@ -11,4 +11,6 @@ float obterPotencia();
 float obterEnergia();
 bool cargaLigada();
 
+void resetarConsumoDiarioEnergia();
+
 #endif
