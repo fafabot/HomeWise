@@ -2,13 +2,14 @@
 #include "agua.h"
 #include "energia.h"
 
+const int MAX_DIAS_MES = 31;
+int diasNoMes = 30;
 
 int diaatual = 1;
 unsigned long momentoInicioDia;
 
-float aguapdia[30];
-
-float energiapdia[30];
+float aguapdia[MAX_DIAS_MES];
+float energiapdia[MAX_DIAS_MES];
 
 void iniciarHistorico() {
   momentoInicioDia = millis();
@@ -32,7 +33,7 @@ void verificarDia() {
     Serial.print(diaatual);
     Serial.println(" finalizado!");
 
-    if (diaatual < 30) {
+    if (diaatual < diasNoMes) {
       diaatual++;
       momentoInicioDia = tempoAtual;
 
@@ -51,7 +52,7 @@ void verificarDia() {
 }
 
 float obterAguaDoDia(int dia) {
-  if (dia < 1 || dia > 30) {
+  if (dia < 1 || dia > diasNoMes) {
     return -1.0;
   }
 
@@ -59,7 +60,7 @@ float obterAguaDoDia(int dia) {
 }
 
 float obterEnergiaDoDia(int dia) {
-  if (dia < 1 || dia > 30) {
+  if (dia < 1 || dia > diasNoMes) {
     return -1.0;
   }
 
@@ -70,5 +71,6 @@ int obterDiasFinalizados() {
   if (historicoAtivo) {
     return diaatual - 1;
   }
-  return 30;
+
+  return diasNoMes;
 }
