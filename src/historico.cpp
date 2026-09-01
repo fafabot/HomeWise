@@ -17,15 +17,16 @@ void iniciarHistorico() {
 
 bool historicoAtivo = true;
 
-void verificarDia() {
+int verificarDia() {
   if (!historicoAtivo) {
-    return;
+    return 0;
   }
 
   unsigned long tempoAtual = millis();
   unsigned long tempoDecorrido = tempoAtual - momentoInicioDia;
 
   if (tempoDecorrido >= 10000) {
+    int diaFinalizado = diaatual;
     aguapdia[diaatual - 1] = obterLitros();
     energiapdia[diaatual - 1] = obterEnergia();
 
@@ -40,15 +41,15 @@ void verificarDia() {
       resetarConsumoDiarioEnergia();
       resetarConsumoDiarioAgua();
 
-      Serial.print("Novo dia: ");
-      Serial.println(diaatual);
-
     } else {
       historicoAtivo = false;
 
       Serial.println("Limite de dias atingido. Historico completo.");
     }
+
+    return diaFinalizado;
   }
+  return 0;
 }
 
 float obterAguaDoDia(int dia) {

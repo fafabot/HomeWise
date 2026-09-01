@@ -7,6 +7,7 @@
 #include "energia.h"
 #include "config.h"
 #include "historico.h"
+#include "analise.h"
 
 #define WATER_BUTTON 18
 #define ENERGY_BUTTON 19
@@ -151,10 +152,42 @@ void setup() {
 void loop() {
   handleWaterButton();
   handleEnergyButton();
+
   atualizarAgua();
   atualizarEnergia();
+
   updateDisplay();
-  verificarDia();
+
+  int diaFinalizado = verificarDia();
+
+  if (diaFinalizado != 0) {
+
+    bool aguaAnormal = consumoAguaAnormal(diaFinalizado);
+    bool energiaAnormal = consumoEnergiaAnormal(diaFinalizado);
+
+    Serial.print("Dia finalizado: ");
+    Serial.println(diaFinalizado);
+
+    Serial.print("Consumo de agua do dia ");
+    Serial.print(diaFinalizado);
+    Serial.print(": ");
+    Serial.print(obterAguaDoDia(diaFinalizado), 3);
+    Serial.println(" L");
+    Serial.print("Consumo de agua anormal: ");
+    Serial.println(aguaAnormal ? "ANORMAL" : "NORMAL");
+
+    Serial.print("Consumo de energia do dia ");
+    Serial.print(diaFinalizado);
+    Serial.print(": ");
+    Serial.print(obterEnergiaDoDia(diaFinalizado), 4);
+    Serial.println(" kWh");
+    Serial.print("Consumo de energia anormal: ");
+    Serial.println(energiaAnormal ? "ANORMAL" : "NORMAL");
+
+    int diaatual = diaFinalizado + 1;
+    Serial.print("Novo dia: ");
+    Serial.println(diaatual);
+  }
 
   if (millis() - lastReport >= 2000) {
     lastReport = millis();
