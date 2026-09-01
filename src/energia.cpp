@@ -3,46 +3,41 @@
 #include "energia.h"
 #include "config.h"
 
-// Simulação inicial da carga elétrica.
-// Quando o PZEM-004T for instalado, este módulo será substituído
-// pelas leituras reais de tensão, corrente, potência e energia.
-
-static float tensao = 0.0;
-static float corrente = 0.0;
-static float potencia = 0.0;
-static float energia = 0.0;
+static float tensao = 0.0f;
+static float corrente = 0.0f;
+static float potencia = 0.0f;
+static float energia = 0.0f;
 static bool cargaLigadaEstado = false;
 static unsigned long ultimaAtualizacao = 0;
 
-static const float SIM_VOLTAGE = 127.0;
-static const float SIM_POWER_W = 500.0;
-
 void iniciarEnergia() {
     ultimaAtualizacao = millis();
-    tensao = 0.0;
-    corrente = 0.0;
-    potencia = 0.0;
-    energia = 0.0;
+    tensao = 0.0f;
+    corrente = 0.0f;
+    potencia = 0.0f;
+    energia = 0.0f;
     cargaLigadaEstado = false;
 }
 
 void definirCarga(bool ligada) {
+    // Contabiliza o periodo anterior antes de trocar o estado da carga.
+    atualizarEnergia();
     cargaLigadaEstado = ligada;
 }
 
 void atualizarEnergia() {
     unsigned long agora = millis();
-    float horas = (agora - ultimaAtualizacao) / 3600000.0;
+    float horas = (agora - ultimaAtualizacao) / 3600000.0f;
 
     if (cargaLigadaEstado) {
-        tensao = SIM_VOLTAGE;
-        potencia = SIM_POWER_W;
+        tensao = SIMULATED_VOLTAGE_V;
+        potencia = SIMULATED_POWER_W;
         corrente = potencia / tensao;
-        energia += (potencia / 1000.0) * horas;
+        energia += (potencia / 1000.0f) * horas;
     } else {
-        tensao = 0.0;
-        corrente = 0.0;
-        potencia = 0.0;
+        tensao = 0.0f;
+        corrente = 0.0f;
+        potencia = 0.0f;
     }
 
     ultimaAtualizacao = agora;
@@ -54,7 +49,7 @@ float obterPotencia() { return potencia; }
 float obterEnergia() { return energia; }
 bool cargaLigada() { return cargaLigadaEstado; }
 
-
 void resetarConsumoDiarioEnergia() {
-    energia = 0.0;
+    energia = 0.0f;
+    ultimaAtualizacao = millis();
 }
