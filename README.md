@@ -1,41 +1,44 @@
-# HomeWise — Simulação Wokwi
+# HomeWise - Simulacao Wokwi
 
 ## Objetivo
 
-Simular a lógica inicial da Central HomeWise antes da chegada dos componentes físicos.
+Simular a logica inicial da Central HomeWise antes da integracao com os componentes fisicos. O prototipo mede consumo de agua e energia, exibe os valores no OLED, armazena um historico diario em memoria e produz analises basicas.
 
-### Água
-Botão azul → representa os pulsos de um sensor de vazão → ESP32 → cálculo em litros.
+## O que ja funciona
 
-### Energia
-Botão vermelho → representa ligar/desligar uma carga (liquidificador) → ESP32 → cálculo de corrente, potência e energia.
-
-## Importante
-
-O PZEM-004T e a física do sensor de vazão não são simulados fisicamente neste primeiro protótipo. Os valores representam o que o ESP32 receberia dos sensores reais.
+- Contagem simulada de pulsos de agua.
+- Conversao de pulsos para litros.
+- Carga eletrica virtual de 500 W em 127 V.
+- Calculo de tensao, corrente, potencia e energia acumulada.
+- Exibicao no OLED e no Monitor Serial.
+- Virada de dia simulada a cada 10 segundos.
+- Historico de ate 30 dias em memoria RAM.
+- Media diaria e previsao mensal.
+- Indicacao de consumo anormal quando o dia supera em 20% a media dos dias anteriores.
 
 ## Controles
 
-### Botão azul — PULSO AGUA
-Cada toque representa 10 pulsos.
+### Botao azul - agua
 
-A simulação utiliza 450 pulsos = 1 litro.
+Cada toque representa 10 pulsos. A simulacao utiliza 450 pulsos por litro.
 
-### Botão vermelho — ENERGIA ON/OFF
-Liga/desliga uma carga virtual de 500 W em 127 V.
+### Botao vermelho - energia
 
-## Próximas etapas
+Liga ou desliga a carga virtual de 500 W.
 
-1. Adicionar Wi-Fi virtual.
-2. Enviar JSON para uma API.
-3. Criar banco de dados.
-4. Criar dashboard.
-5. Adicionar médias e previsão mensal.
-6. Adicionar alertas.
-7. Quando os componentes chegarem, substituir a simulação pelos sensores reais.
+## Importante
 
-## Arquitetura
+O PZEM-004T e o sensor de vazao ainda nao sao simulados fisicamente. O historico atual fica somente na RAM e e perdido quando o ESP32 reinicia. No primeiro dia, o sistema informa que ainda nao existe historico suficiente para classificar o consumo.
 
-Sensor de vazão → ESP32 → Wi-Fi → API → Banco → Dashboard
+## Arquitetura planejada
 
-PZEM + CT → ESP32 → Wi-Fi → API → Banco → Dashboard
+Sensor de vazao / PZEM -> ESP32 -> Wi-Fi -> API REST -> MySQL -> Dashboard
+
+## Proximas etapas
+
+1. Adicionar Wi-Fi virtual ao ESP32.
+2. Definir e gerar o JSON das leituras.
+3. Enviar as leituras para uma API REST.
+4. Armazenar os dados no MySQL.
+5. Criar o dashboard com graficos e alertas.
+6. Integrar e calibrar os sensores fisicos.
