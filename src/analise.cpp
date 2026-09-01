@@ -1,32 +1,37 @@
 #include "analise.h"
+#include "config.h"
 #include "historico.h"
 
+static float calcularMediaAguaNoIntervalo(int ultimoDia) {
+    if (ultimoDia < 1 || ultimoDia > obterDiasFinalizados()) {
+        return 0.0f;
+    }
+
+    float soma = 0.0f;
+    for (int dia = 1; dia <= ultimoDia; dia++) {
+        soma += obterAguaDoDia(dia);
+    }
+    return soma / ultimoDia;
+}
+
+static float calcularMediaEnergiaNoIntervalo(int ultimoDia) {
+    if (ultimoDia < 1 || ultimoDia > obterDiasFinalizados()) {
+        return 0.0f;
+    }
+
+    float soma = 0.0f;
+    for (int dia = 1; dia <= ultimoDia; dia++) {
+        soma += obterEnergiaDoDia(dia);
+    }
+    return soma / ultimoDia;
+}
+
 float calcularMediaAgua() {
-    int diasFinalizados = obterDiasFinalizados();
-    if (diasFinalizados == 0) {
-        return 0.0;
-    }
-    
-    float somaAgua = 0.0;
-    for (int i = 1; i <= diasFinalizados; i++) {
-        somaAgua += obterAguaDoDia(i);
-    }
-    
-    return somaAgua / diasFinalizados;
+    return calcularMediaAguaNoIntervalo(obterDiasFinalizados());
 }
 
 float calcularMediaEnergia() {
-    int diasFinalizados = obterDiasFinalizados();
-    if (diasFinalizados == 0) {
-        return 0.0;
-    }
-    
-    float somaEnergia = 0.0;
-    for (int i = 1; i <= diasFinalizados; i++) {
-        somaEnergia += obterEnergiaDoDia(i);
-    }
-    
-    return somaEnergia / diasFinalizados;
+    return calcularMediaEnergiaNoIntervalo(obterDiasFinalizados());
 }
 
 float calcularPrevisaoMensalAgua() {
@@ -38,46 +43,33 @@ float calcularPrevisaoMensalEnergia() {
 }
 
 float calcularMediaAguaAntesDoDia(int dia) {
-    if (dia <= 1 || dia > obterDiasNoMes()) {
-        return 0.0;
-    }
-
-    int diasFinalizados = obterDiasFinalizados();
-
-    float somaAgua = 0.0;
-    int diasUsados = 0;
-
-    for (int i = 1; i < dia && i <= diasFinalizados; i++) {
-        somaAgua += obterAguaDoDia(i);
-        diasUsados++;
-    }
-
-    if (diasUsados == 0) {
-        return 0.0;
-    }
-
-    return somaAgua / diasUsados;
+    return calcularMediaAguaNoIntervalo(dia - 1);
 }
 
+float calcularMediaEnergiaAntesDoDia(int dia) {
+    return calcularMediaEnergiaNoIntervalo(dia - 1);
+}
+
+bool possuiBaseComparacao(int dia) {
+    return dia > 1 && dia <= obterDiasFinalizados();
+}
 
 bool consumoAguaAnormal(int dia) {
-    if (dia <= 1 || dia > obterDiasNoMes()) {
+    if (!possuiBaseComparacao(dia)) {
         return false;
     }
 
-    float mediaAntesDoDia = calcularMediaAguaAntesDoDia(dia);
+    float mediaAnterior = calcularMediaAguaAntesDoDia(dia);
     float consumoAtual = obterAguaDoDia(dia);
-
-    return consumoAtual > (1.20 * mediaAntesDoDia);
+    return consumoAtual > ABNORMAL_CONSUMPTION_FACTOR * mediaAnterior;
 }
 
 bool consumoEnergiaAnormal(int dia) {
-    if (dia <= 1 || dia > obterDiasNoMes()) {
+    if (!possuiBaseComparacao(dia)) {
         return false;
     }
 
-    float mediaAntesDoDia = calcularMediaEnergia();
+    float mediaAnterior = calcularMediaEnergiaAntesDoDia(dia);
     float consumoAtual = obterEnergiaDoDia(dia);
-
-    return consumoAtual > (1.20 * mediaAntesDoDia);
+    return consumoAtual > ABNORMAL_CONSUMPTION_FACTOR * mediaAnterior;
 }
