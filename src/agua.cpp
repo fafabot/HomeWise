@@ -3,23 +3,23 @@
 #include "agua.h"
 #include "config.h"
 
-volatile unsigned long pulsosAgua = 0;
+static volatile unsigned long pulsosAgua = 0;
+static float litros = 0.0f;
+static float vazao = 0.0f;
 
-float litros = 0.0;
-float vazao = 0.0;
-
-// Valor inicial para simulação.
-// Será calibrado quando o sensor físico for utilizado.
-const float PULSOS_POR_LITRO = 450.0;
+static unsigned long copiarPulsosComSeguranca() {
+    noInterrupts();
+    unsigned long copia = pulsosAgua;
+    interrupts();
+    return copia;
+}
 
 void IRAM_ATTR contarPulso() {
     pulsosAgua += WATER_PULSES_PER_EVENT;
 }
 
 void iniciarAgua() {
-
     pinMode(WATER_SENSOR_PIN, INPUT_PULLUP);
-
     attachInterrupt(
         digitalPinToInterrupt(WATER_SENSOR_PIN),
         contarPulso,
@@ -28,11 +28,7 @@ void iniciarAgua() {
 }
 
 void atualizarAgua() {
-
-    litros = pulsosAgua / PULSOS_POR_LITRO;
-
-    // A vazão será aprimorada posteriormente
-    // utilizando uma janela de tempo.
+    litros = copiarPulsosComSeguranca() / WATER_PULSES_PER_LITER;
 }
 
 float obterLitros() {
@@ -44,13 +40,14 @@ float obterVazao() {
 }
 
 unsigned long obterPulsos() {
-    return pulsosAgua;
+    return copiarPulsosComSeguranca();
 }
 
-
-
 void resetarConsumoDiarioAgua() {
+    noInterrupts();
     pulsosAgua = 0;
-    litros = 0.0;
-    vazao = 0.0;
+    interrupts();
+
+    litros = 0.0f;
+    vazao = 0.0f;
 }
