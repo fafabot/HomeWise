@@ -74,3 +74,7 @@ int obterDiasFinalizados() {
 
   return diasNoMes;
 }
+
+int obterDiasNoMes() {
+  return diasNoMes;
+}
