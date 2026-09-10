@@ -8,6 +8,7 @@
 #include "config.h"
 #include "energia.h"
 #include "historico.h"
+#include "tempo.h"
 
 Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET_PIN);
 
@@ -166,6 +167,7 @@ void setup() {
 
     iniciarEnergia();
     iniciarAgua();
+    iniciarTempo();
     iniciarHistorico();
 
     lastWaterButton = digitalRead(WATER_SENSOR_PIN);
