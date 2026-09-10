@@ -4,18 +4,15 @@
 #include "config.h"
 #include "energia.h"
 #include "historico.h"
+#include "tempo.h"
 
-static int diaAtual = 1;
-static unsigned long momentoInicioDia = 0;
-static bool historicoAtivo = true;
+static int diasFinalizados = 0;
 
 static float aguaPorDia[HISTORY_MAX_DAYS] = {};
 static float energiaPorDia[HISTORY_MAX_DAYS] = {};
 
 void iniciarHistorico() {
-    diaAtual = 1;
-    momentoInicioDia = millis();
-    historicoAtivo = true;
+    diasFinalizados = 0;
 
     for (int i = 0; i < HISTORY_MAX_DAYS; i++) {
         aguaPorDia[i] = 0.0f;
@@ -24,51 +21,48 @@ void iniciarHistorico() {
 }
 
 int verificarDia() {
-    if (!historicoAtivo) {
+    int diaFinalizado = obterDiaAtual();
+
+    if (!verificarMudancaDeDia()) {
         return 0;
     }
 
-    unsigned long tempoAtual = millis();
-    unsigned long tempoDecorrido = tempoAtual - momentoInicioDia;
-
-    if (tempoDecorrido < SIMULATED_DAY_DURATION_MS) {
+    if (diaFinalizado < 1 || diaFinalizado > HISTORY_MAX_DAYS) {
         return 0;
     }
 
-    int diaFinalizado = diaAtual;
     aguaPorDia[diaFinalizado - 1] = obterLitros();
     energiaPorDia[diaFinalizado - 1] = obterEnergia();
+    diasFinalizados = diaFinalizado;
 
-    if (diaAtual < SIMULATED_DAYS_IN_MONTH) {
-        diaAtual++;
-        momentoInicioDia = tempoAtual;
+    if (diaFinalizado < obterDiasNoMesAtual()) {
         resetarConsumoDiarioAgua();
         resetarConsumoDiarioEnergia();
-    } else {
-        historicoAtivo = false;
     }
 
     return diaFinalizado;
 }
 
 float obterAguaDoDia(int dia) {
-    if (dia < 1 || dia > obterDiasFinalizados()) {
+    if (dia < 1 || dia > diasFinalizados) {
         return -1.0f;
     }
+
     return aguaPorDia[dia - 1];
 }
 
 float obterEnergiaDoDia(int dia) {
-    if (dia < 1 || dia > obterDiasFinalizados()) {
+    if (dia < 1 || dia > diasFinalizados) {
         return -1.0f;
     }
+
     return energiaPorDia[dia - 1];
 }
 
 int obterDiasFinalizados() {
-    return historicoAtivo ? diaAtual - 1 : SIMULATED_DAYS_IN_MONTH;
+    return diasFinalizados;
 }
 
 int obterDiasNoMes() {
-    return SIMULATED_DAYS_IN_MONTH;
+    return obterDiasNoMesAtual();
 }
