@@ -3,11 +3,11 @@
 
 // ==============================
 // HOMEWISE - CONFIGURACOES
-// Controlador oficial: WEMOS D1 R1 (ESP8266)
+// Controlador oficial: LOLIN NodeMCU V3 (ESP8266)
 // ==============================
 
 // ---------- Sensor de agua ----------
-// D5 = GPIO14. Pino seguro para interrupcao no WEMOS D1 R1.
+// D5 = GPIO14. Pino utilizado para a interrupcao do sensor de vazao.
 #define WATER_SENSOR_PIN D5
 
 // No sensor fisico, cada pulso recebido conta como 1 evento.
