@@ -8,53 +8,16 @@
 #include "config.h"
 #include "historico.h"
 
-#define WATER_BUTTON 18
-#define ENERGY_BUTTON 19
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-bool lastWaterButton = HIGH;
-bool lastEnergyButton = HIGH;
+Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 
 unsigned long lastReport = 0;
 unsigned long lastDisplay = 0;
 
-void handleWaterButton() {
-  bool current = digitalRead(WATER_BUTTON);
-
-  if (lastWaterButton == HIGH && current == LOW) {
-    atualizarAgua();
-
-    Serial.print("[AGUA] Pulsos: ");
-    Serial.print(obterPulsos());
-    Serial.print(" | Consumo: ");
-    Serial.print(obterLitros(), 3);
-    Serial.println(" L");
-  }
-
-  lastWaterButton = current;
-}
-
-void handleEnergyButton() {
-  bool current = digitalRead(ENERGY_BUTTON);
-
-  if (lastEnergyButton == HIGH && current == LOW) {
-    bool novaCarga = !cargaLigada();
-    definirCarga(novaCarga);
-
-    Serial.print("[ENERGIA] Liquidificador: ");
-    Serial.println(novaCarga ? "LIGADO" : "DESLIGADO");
-  }
-
-  lastEnergyButton = current;
-}
-
 void updateDisplay() {
-  if (millis() - lastDisplay < 300) return;
+  if (millis() - lastDisplay < DISPLAY_UPDATE_INTERVAL_MS) {
+    return;
+  }
+
   lastDisplay = millis();
 
   display.clearDisplay();
@@ -64,6 +27,7 @@ void updateDisplay() {
 
   display.println("HOMEWISE");
   display.println("----------------");
+
   display.print("Agua: ");
   display.print(obterLitros(), 2);
   display.println(" L");
@@ -105,7 +69,7 @@ void printReport() {
   Serial.print(obterPotencia(), 1);
   Serial.println(" W");
 
-  Serial.print("Energia acumulada: ");
+  Serial.print("Energia diaria: ");
   Serial.print(obterEnergia(), 4);
   Serial.println(" kWh");
 
@@ -113,21 +77,18 @@ void printReport() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD);
+  delay(50);
 
+  Serial.println();
   Serial.println("================================");
-  Serial.println("       HOMEWISE - ESP32");
+  Serial.println("   HOMEWISE - ESP8266 / D1 R1");
   Serial.println("================================");
-  Serial.println("Iniciando simulacao...");
-
-  pinMode(WATER_BUTTON, INPUT_PULLUP);
-  pinMode(ENERGY_BUTTON, INPUT_PULLUP);
+  Serial.println("Iniciando prototipo fisico...");
 
   Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
 
-
-
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
     Serial.println("ERRO: OLED nao inicializado.");
   } else {
     display.clearDisplay();
@@ -135,28 +96,26 @@ void setup() {
     display.setTextSize(1);
     display.setCursor(0, 0);
     display.println("HOMEWISE");
-    display.println("Simulacao Wokwi");
+    display.println("ESP8266 - D1 R1");
     display.println();
     display.println("Agua + Energia");
     display.display();
   }
 
-  iniciarEnergia();
   iniciarAgua();
+  iniciarEnergia();
   iniciarHistorico();
 
   Serial.println("Sistema pronto!");
 }
 
 void loop() {
-  handleWaterButton();
-  handleEnergyButton();
   atualizarAgua();
   atualizarEnergia();
   updateDisplay();
   verificarDia();
 
-  if (millis() - lastReport >= 2000) {
+  if (millis() - lastReport >= REPORT_INTERVAL_MS) {
     lastReport = millis();
     printReport();
   }
