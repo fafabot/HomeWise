@@ -3,10 +3,16 @@
 #include "agua.h"
 #include "config.h"
 
-volatile unsigned long pulsosAgua = 0;
-
+static volatile unsigned long pulsosAgua = 0;
 static float litros = 0.0f;
 static float vazao = 0.0f;
+
+static unsigned long copiarPulsosComSeguranca() {
+    noInterrupts();
+    unsigned long copia = pulsosAgua;
+    interrupts();
+    return copia;
+}
 
 void ICACHE_RAM_ATTR contarPulso() {
     pulsosAgua += WATER_PULSES_PER_EVENT;
@@ -14,7 +20,6 @@ void ICACHE_RAM_ATTR contarPulso() {
 
 void iniciarAgua() {
     pinMode(WATER_SENSOR_PIN, INPUT_PULLUP);
-
     attachInterrupt(
         digitalPinToInterrupt(WATER_SENSOR_PIN),
         contarPulso,
@@ -23,15 +28,7 @@ void iniciarAgua() {
 }
 
 void atualizarAgua() {
-    // Faz uma copia segura do contador que e alterado pela interrupcao.
-    noInterrupts();
-    unsigned long pulsos = pulsosAgua;
-    interrupts();
-
-    litros = pulsos / WATER_PULSES_PER_LITER;
-
-    // A vazao instantanea sera calculada em uma etapa posterior,
-    // usando a quantidade de pulsos em uma janela de tempo.
+    litros = copiarPulsosComSeguranca() / WATER_PULSES_PER_LITER;
 }
 
 float obterLitros() {
@@ -43,10 +40,7 @@ float obterVazao() {
 }
 
 unsigned long obterPulsos() {
-    noInterrupts();
-    unsigned long pulsos = pulsosAgua;
-    interrupts();
-    return pulsos;
+    return copiarPulsosComSeguranca();
 }
 
 void resetarConsumoDiarioAgua() {
@@ -57,3 +51,4 @@ void resetarConsumoDiarioAgua() {
     litros = 0.0f;
     vazao = 0.0f;
 }
+

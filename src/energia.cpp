@@ -2,11 +2,9 @@
 #include <SoftwareSerial.h>
 #include <PZEM004Tv30.h>
 
-#include "energia.h"
 #include "config.h"
+#include "energia.h"
 
-// ESP8266 nao possui uma UART extra livre como o ESP32.
-// Por isso o PZEM-004T v3 utiliza SoftwareSerial nos pinos definidos em config.h.
 SoftwareSerial pzemSerial(PZEM_RX_PIN, PZEM_TX_PIN);
 PZEM004Tv30 pzem(pzemSerial);
 
@@ -45,8 +43,6 @@ void atualizarEnergia() {
     float novaPotencia = pzem.power();
     float novaEnergiaTotal = pzem.energy();
 
-    // Quando o PZEM nao responde, a biblioteca retorna NaN.
-    // Mantemos o acumulado diario e zeramos apenas os valores instantaneos.
     if (isnan(novaTensao) || isnan(novaCorrente) ||
         isnan(novaPotencia) || isnan(novaEnergiaTotal)) {
         tensao = 0.0f;
@@ -60,8 +56,6 @@ void atualizarEnergia() {
     potencia = novaPotencia;
     energiaTotalKWh = novaEnergiaTotal;
 
-    // A primeira leitura valida vira a referencia do consumo diario.
-    // Assim nao precisamos apagar o contador interno do PZEM.
     if (!baseEnergiaInicializada) {
         energiaBaseKWh = energiaTotalKWh;
         baseEnergiaInicializada = true;
@@ -70,31 +64,16 @@ void atualizarEnergia() {
     energia = energiaTotalKWh - energiaBaseKWh;
 
     if (energia < 0.0f) {
-        // Protecao caso o contador do PZEM seja reiniciado externamente.
         energiaBaseKWh = energiaTotalKWh;
         energia = 0.0f;
     }
 }
 
-float obterTensao() {
-    return tensao;
-}
-
-float obterCorrente() {
-    return corrente;
-}
-
-float obterPotencia() {
-    return potencia;
-}
-
-float obterEnergia() {
-    return energia;
-}
-
-bool cargaLigada() {
-    return potencia > 1.0f;
-}
+float obterTensao() { return tensao; }
+float obterCorrente() { return corrente; }
+float obterPotencia() { return potencia; }
+float obterEnergia() { return energia; }
+bool cargaLigada() { return potencia > 1.0f; }
 
 void resetarConsumoDiarioEnergia() {
     if (baseEnergiaInicializada) {
@@ -103,3 +82,4 @@ void resetarConsumoDiarioEnergia() {
 
     energia = 0.0f;
 }
+

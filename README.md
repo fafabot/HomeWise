@@ -1,76 +1,86 @@
-# HomeWise — Protótipo físico com ESP8266
+# HomeWise - prototipo fisico com ESP8266
 
 ## Objetivo
 
-A HomeWise é um sistema de monitoramento residencial de consumo de água e energia. O protótipo oficial utiliza o **LOLIN NodeMCU V3 com ESP8266**, aproveitando o hardware físico disponível para os testes e para a apresentação do TCC.
+A HomeWise monitora o consumo residencial de agua e energia. O controlador oficial do prototipo fisico e o **LOLIN NodeMCU V3 com ESP8266**, desenvolvido no VS Code com PlatformIO.
 
-## Controlador
+## O que ja funciona
 
-- LOLIN NodeMCU V3
-- Microcontrolador ESP8266
-- Wi-Fi integrado
-- Desenvolvimento com VS Code + PlatformIO
-- Board ID no PlatformIO: `nodemcuv2`
+- Contagem dos pulsos fisicos do YF-S201 por interrupcao.
+- Conversao inicial de 450 pulsos para 1 litro, com calibracao futura.
+- Leitura do PZEM-004T v3 por `SoftwareSerial`.
+- Exibicao dos valores no OLED e no Monitor Serial.
+- Historico de ate 31 dias em memoria RAM.
+- Media diaria e previsao mensal.
+- Indicacao de consumo anormal acima de 20% da media anterior.
+- Dia acelerado de 10 segundos para testar a logica durante o desenvolvimento.
 
-## Água
+## Controlador e PlatformIO
 
-O sensor de vazão envia pulsos ao ESP8266. O módulo `agua.cpp` conta esses pulsos por interrupção e converte o total em litros.
+- Placa: LOLIN NodeMCU V3
+- Microcontrolador: ESP8266
+- Board ID: `nodemcuv2`
+- Monitor Serial: 115200 baud
 
-Configuração inicial:
+## Ligacoes de baixa tensao
 
-- Pino: D5 / GPIO14
-- Referência inicial: 450 pulsos por litro
-- Cada pulso físico conta como 1 evento
+### OLED SSD1306
 
-O valor de pulsos por litro deverá ser calibrado com testes reais de volume.
+| OLED | NodeMCU V3 |
+| --- | --- |
+| VCC | 3V3 |
+| GND | GND |
+| SDA | D2 / GPIO4 |
+| SCL | D1 / GPIO5 |
 
-## Energia
+Endereco I2C configurado: `0x3C`.
 
-O PZEM-004T v3 realiza as leituras elétricas e se comunica com o ESP8266 utilizando `SoftwareSerial`.
+### Sensor de agua YF-S201
 
-Configuração:
+| YF-S201 | Ligacao |
+| --- | --- |
+| Vermelho | 5 V regulados |
+| Preto | GND |
+| Amarelo | D5 / GPIO14 atraves de conversao de 5 V para 3,3 V |
 
-- RX: D6 / GPIO12
-- TX: D7 / GPIO13
-- Leituras: tensão, corrente, potência e energia
+O sinal amarelo nao deve ser ligado diretamente ao ESP8266. Pode ser usado um conversor de nivel ou um divisor com 10 kohms entre o sinal e D5 e 20 kohms entre D5 e GND.
 
-O sistema utiliza a leitura acumulada do PZEM como referência para calcular o consumo diário sem apagar o contador interno do módulo.
+### PZEM-004T v3 - comunicacao
 
-## OLED
+| PZEM | NodeMCU V3 |
+| --- | --- |
+| 5V | 5 V regulados |
+| GND | GND |
+| TX | D6 / GPIO12 (RX do ESP8266) |
+| RX | D7 / GPIO13 (TX do ESP8266) |
 
-O display OLED SSD1306 utiliza comunicação I2C:
+Use conversao de nivel logico entre a UART de 5 V do PZEM e o ESP8266 de 3,3 V.
 
-- SDA: D2 / GPIO4
-- SCL: D1 / GPIO5
-- Endereço: 0x3C
+## Teste fisico
 
-## Histórico
+1. Atualize a branch `main` local e abra a pasta que contem `platformio.ini`.
+2. Execute `Clean`, `Build` e `Upload` no ambiente `nodemcuv2`.
+3. Abra o Monitor Serial em 115200 baud.
+4. Teste primeiro o NodeMCU e o OLED.
+5. Para simular um pulso sem o YF-S201, toque rapidamente D5 no GND.
+6. Conecte e calibre o YF-S201 com um volume conhecido de agua.
+7. Deixe o teste do PZEM para o final.
 
-A lógica atual mantém o histórico de água e energia em memória. Durante o desenvolvimento, o encerramento de um dia continua acelerado para facilitar os testes da lógica de histórico, médias e futuras análises.
+Sem o PZEM respondendo, os valores de tensao, corrente e potencia permanecem em zero.
+
+## Seguranca eletrica
+
+O lado de 127/220 V do PZEM nao deve ser montado em protoboard. A ligacao da rede depende da versao de 10 A ou 100 A do modulo e deve ser realizada com supervisao qualificada, isolamento e protecao adequados.
 
 ## Arquitetura planejada
 
-Sensor de vazão → ESP8266 → Wi-Fi → API → MySQL → Site HomeWise
+Sensor de vazao / PZEM -> ESP8266 -> Wi-Fi -> API REST -> MySQL -> Dashboard
 
-PZEM-004T → ESP8266 → Wi-Fi → API → MySQL → Site HomeWise
+## Proximas etapas
 
-## Wokwi
+1. Calibrar o YF-S201.
+2. Validar a comunicacao e as medicoes do PZEM-004T.
+3. Substituir o dia acelerado por data e hora reais.
+4. Implementar Wi-Fi e envio HTTP/JSON.
+5. Integrar API, MySQL e dashboard.
 
-A simulação anterior com ESP32 foi preservada apenas como material de referência em `legacy/wokwi-esp32/`.
-
-O protótipo oficial agora é voltado ao ESP8266 físico. A documentação oficial atual do Wokwi não lista o ESP8266 entre os microcontroladores suportados, por isso os arquivos de simulação ESP32 não ficam mais na raiz do projeto.
-
-## Próximas etapas
-
-1. Compilar o projeto para o LOLIN NodeMCU V3.
-2. Testar o OLED no ESP8266 físico.
-3. Testar e calibrar o sensor de vazão.
-4. Validar a comunicação com o PZEM-004T.
-5. Substituir o tempo acelerado por controle de data/hora real.
-6. Implementar Wi-Fi e envio HTTP/JSON para a API.
-7. Integrar banco MySQL e dashboard.
-8. Implementar médias, previsão mensal e alertas.
-
-## Segurança elétrica
-
-A parte de medição de energia envolve tensão de rede. A montagem física deve respeitar isolamento, proteção e procedimentos adequados. O ESP8266 trabalha com níveis lógicos de 3,3 V; antes de conectar módulos externos, os níveis elétricos dos sinais devem ser verificados.

@@ -13,3 +13,4 @@ bool cargaLigada();
 void resetarConsumoDiarioEnergia();
 
 #endif
+
