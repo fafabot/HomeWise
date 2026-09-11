@@ -2,14 +2,15 @@
 
 ## Objetivo
 
-A HomeWise é um sistema de monitoramento residencial de consumo de água e energia. O protótipo oficial passa a utilizar o **WEMOS D1 R1 com ESP8266**, aproveitando o hardware físico disponível para os testes e para a apresentação do TCC.
+A HomeWise é um sistema de monitoramento residencial de consumo de água e energia. O protótipo oficial utiliza o **LOLIN NodeMCU V3 com ESP8266**, aproveitando o hardware físico disponível para os testes e para a apresentação do TCC.
 
 ## Controlador
 
-- WEMOS D1 R1
+- LOLIN NodeMCU V3
 - Microcontrolador ESP8266
 - Wi-Fi integrado
 - Desenvolvimento com VS Code + PlatformIO
+- Board ID no PlatformIO: `nodemcuv2`
 
 ## Água
 
@@ -61,7 +62,7 @@ O protótipo oficial agora é voltado ao ESP8266 físico. A documentação ofici
 
 ## Próximas etapas
 
-1. Compilar o projeto para o WEMOS D1 R1.
+1. Compilar o projeto para o LOLIN NodeMCU V3.
 2. Testar o OLED no ESP8266 físico.
 3. Testar e calibrar o sensor de vazão.
 4. Validar a comunicação com o PZEM-004T.
