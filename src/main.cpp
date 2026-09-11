@@ -82,7 +82,7 @@ void setup() {
 
   Serial.println();
   Serial.println("================================");
-  Serial.println("   HOMEWISE - ESP8266 / D1 R1");
+  Serial.println(" HOMEWISE - LOLIN NodeMCU V3");
   Serial.println("================================");
   Serial.println("Iniciando prototipo fisico...");
 
@@ -96,7 +96,7 @@ void setup() {
     display.setTextSize(1);
     display.setCursor(0, 0);
     display.println("HOMEWISE");
-    display.println("ESP8266 - D1 R1");
+    display.println("NodeMCU V3");
     display.println();
     display.println("Agua + Energia");
     display.display();
