@@ -1,41 +1,75 @@
-# HomeWise — Simulação Wokwi
+# HomeWise — Protótipo físico com ESP8266
 
 ## Objetivo
 
-Simular a lógica inicial da Central HomeWise antes da chegada dos componentes físicos.
+A HomeWise é um sistema de monitoramento residencial de consumo de água e energia. O protótipo oficial passa a utilizar o **WEMOS D1 R1 com ESP8266**, aproveitando o hardware físico disponível para os testes e para a apresentação do TCC.
 
-### Água
-Botão azul → representa os pulsos de um sensor de vazão → ESP32 → cálculo em litros.
+## Controlador
 
-### Energia
-Botão vermelho → representa ligar/desligar uma carga (liquidificador) → ESP32 → cálculo de corrente, potência e energia.
+- WEMOS D1 R1
+- Microcontrolador ESP8266
+- Wi-Fi integrado
+- Desenvolvimento com VS Code + PlatformIO
 
-## Importante
+## Água
 
-O PZEM-004T e a física do sensor de vazão não são simulados fisicamente neste primeiro protótipo. Os valores representam o que o ESP32 receberia dos sensores reais.
+O sensor de vazão envia pulsos ao ESP8266. O módulo `agua.cpp` conta esses pulsos por interrupção e converte o total em litros.
 
-## Controles
+Configuração inicial:
 
-### Botão azul — PULSO AGUA
-Cada toque representa 10 pulsos.
+- Pino: D5 / GPIO14
+- Referência inicial: 450 pulsos por litro
+- Cada pulso físico conta como 1 evento
 
-A simulação utiliza 450 pulsos = 1 litro.
+O valor de pulsos por litro deverá ser calibrado com testes reais de volume.
 
-### Botão vermelho — ENERGIA ON/OFF
-Liga/desliga uma carga virtual de 500 W em 127 V.
+## Energia
+
+O PZEM-004T v3 realiza as leituras elétricas e se comunica com o ESP8266 utilizando `SoftwareSerial`.
+
+Configuração:
+
+- RX: D6 / GPIO12
+- TX: D7 / GPIO13
+- Leituras: tensão, corrente, potência e energia
+
+O sistema utiliza a leitura acumulada do PZEM como referência para calcular o consumo diário sem apagar o contador interno do módulo.
+
+## OLED
+
+O display OLED SSD1306 utiliza comunicação I2C:
+
+- SDA: D2 / GPIO4
+- SCL: D1 / GPIO5
+- Endereço: 0x3C
+
+## Histórico
+
+A lógica atual mantém o histórico de água e energia em memória. Durante o desenvolvimento, o encerramento de um dia continua acelerado para facilitar os testes da lógica de histórico, médias e futuras análises.
+
+## Arquitetura planejada
+
+Sensor de vazão → ESP8266 → Wi-Fi → API → MySQL → Site HomeWise
+
+PZEM-004T → ESP8266 → Wi-Fi → API → MySQL → Site HomeWise
+
+## Wokwi
+
+A simulação anterior com ESP32 foi preservada apenas como material de referência em `legacy/wokwi-esp32/`.
+
+O protótipo oficial agora é voltado ao ESP8266 físico. A documentação oficial atual do Wokwi não lista o ESP8266 entre os microcontroladores suportados, por isso os arquivos de simulação ESP32 não ficam mais na raiz do projeto.
 
 ## Próximas etapas
 
-1. Adicionar Wi-Fi virtual.
-2. Enviar JSON para uma API.
-3. Criar banco de dados.
-4. Criar dashboard.
-5. Adicionar médias e previsão mensal.
-6. Adicionar alertas.
-7. Quando os componentes chegarem, substituir a simulação pelos sensores reais.
+1. Compilar o projeto para o WEMOS D1 R1.
+2. Testar o OLED no ESP8266 físico.
+3. Testar e calibrar o sensor de vazão.
+4. Validar a comunicação com o PZEM-004T.
+5. Substituir o tempo acelerado por controle de data/hora real.
+6. Implementar Wi-Fi e envio HTTP/JSON para a API.
+7. Integrar banco MySQL e dashboard.
+8. Implementar médias, previsão mensal e alertas.
 
-## Arquitetura
+## Segurança elétrica
 
-Sensor de vazão → ESP32 → Wi-Fi → API → Banco → Dashboard
-
-PZEM + CT → ESP32 → Wi-Fi → API → Banco → Dashboard
+A parte de medição de energia envolve tensão de rede. A montagem física deve respeitar isolamento, proteção e procedimentos adequados. O ESP8266 trabalha com níveis lógicos de 3,3 V; antes de conectar módulos externos, os níveis elétricos dos sinais devem ser verificados.
