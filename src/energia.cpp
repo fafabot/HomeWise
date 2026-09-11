@@ -1,59 +1,105 @@
 #include <Arduino.h>
+#include <SoftwareSerial.h>
+#include <PZEM004Tv30.h>
 
 #include "energia.h"
 #include "config.h"
 
-// Simulação inicial da carga elétrica.
-// Quando o PZEM-004T for instalado, este módulo será substituído
-// pelas leituras reais de tensão, corrente, potência e energia.
+// ESP8266 nao possui uma UART extra livre como o ESP32.
+// Por isso o PZEM-004T v3 utiliza SoftwareSerial nos pinos definidos em config.h.
+SoftwareSerial pzemSerial(PZEM_RX_PIN, PZEM_TX_PIN);
+PZEM004Tv30 pzem(pzemSerial);
 
-static float tensao = 0.0;
-static float corrente = 0.0;
-static float potencia = 0.0;
-static float energia = 0.0;
-static bool cargaLigadaEstado = false;
-static unsigned long ultimaAtualizacao = 0;
+static float tensao = 0.0f;
+static float corrente = 0.0f;
+static float potencia = 0.0f;
+static float energia = 0.0f;
 
-static const float SIM_VOLTAGE = 127.0;
-static const float SIM_POWER_W = 500.0;
+static float energiaTotalKWh = 0.0f;
+static float energiaBaseKWh = 0.0f;
+static bool baseEnergiaInicializada = false;
+static unsigned long ultimaLeitura = 0;
 
 void iniciarEnergia() {
-    ultimaAtualizacao = millis();
-    tensao = 0.0;
-    corrente = 0.0;
-    potencia = 0.0;
-    energia = 0.0;
-    cargaLigadaEstado = false;
-}
-
-void definirCarga(bool ligada) {
-    cargaLigadaEstado = ligada;
+    tensao = 0.0f;
+    corrente = 0.0f;
+    potencia = 0.0f;
+    energia = 0.0f;
+    energiaTotalKWh = 0.0f;
+    energiaBaseKWh = 0.0f;
+    baseEnergiaInicializada = false;
+    ultimaLeitura = 0;
 }
 
 void atualizarEnergia() {
     unsigned long agora = millis();
-    float horas = (agora - ultimaAtualizacao) / 3600000.0;
 
-    if (cargaLigadaEstado) {
-        tensao = SIM_VOLTAGE;
-        potencia = SIM_POWER_W;
-        corrente = potencia / tensao;
-        energia += (potencia / 1000.0) * horas;
-    } else {
-        tensao = 0.0;
-        corrente = 0.0;
-        potencia = 0.0;
+    if (agora - ultimaLeitura < ENERGY_READ_INTERVAL_MS) {
+        return;
     }
 
-    ultimaAtualizacao = agora;
+    ultimaLeitura = agora;
+
+    float novaTensao = pzem.voltage();
+    float novaCorrente = pzem.current();
+    float novaPotencia = pzem.power();
+    float novaEnergiaTotal = pzem.energy();
+
+    // Quando o PZEM nao responde, a biblioteca retorna NaN.
+    // Mantemos o acumulado diario e zeramos apenas os valores instantaneos.
+    if (isnan(novaTensao) || isnan(novaCorrente) ||
+        isnan(novaPotencia) || isnan(novaEnergiaTotal)) {
+        tensao = 0.0f;
+        corrente = 0.0f;
+        potencia = 0.0f;
+        return;
+    }
+
+    tensao = novaTensao;
+    corrente = novaCorrente;
+    potencia = novaPotencia;
+    energiaTotalKWh = novaEnergiaTotal;
+
+    // A primeira leitura valida vira a referencia do consumo diario.
+    // Assim nao precisamos apagar o contador interno do PZEM.
+    if (!baseEnergiaInicializada) {
+        energiaBaseKWh = energiaTotalKWh;
+        baseEnergiaInicializada = true;
+    }
+
+    energia = energiaTotalKWh - energiaBaseKWh;
+
+    if (energia < 0.0f) {
+        // Protecao caso o contador do PZEM seja reiniciado externamente.
+        energiaBaseKWh = energiaTotalKWh;
+        energia = 0.0f;
+    }
 }
 
-float obterTensao() { return tensao; }
-float obterCorrente() { return corrente; }
-float obterPotencia() { return potencia; }
-float obterEnergia() { return energia; }
-bool cargaLigada() { return cargaLigadaEstado; }
+float obterTensao() {
+    return tensao;
+}
+
+float obterCorrente() {
+    return corrente;
+}
+
+float obterPotencia() {
+    return potencia;
+}
+
+float obterEnergia() {
+    return energia;
+}
+
+bool cargaLigada() {
+    return potencia > 1.0f;
+}
 
 void resetarConsumoDiarioEnergia() {
-    energia = 0.0;
+    if (baseEnergiaInicializada) {
+        energiaBaseKWh = energiaTotalKWh;
+    }
+
+    energia = 0.0f;
 }

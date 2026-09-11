@@ -3,7 +3,6 @@
 
 void iniciarEnergia();
 void atualizarEnergia();
-void definirCarga(bool ligada);
 
 float obterTensao();
 float obterCorrente();
@@ -12,4 +11,5 @@ float obterEnergia();
 bool cargaLigada();
 
 void resetarConsumoDiarioEnergia();
+
 #endif
