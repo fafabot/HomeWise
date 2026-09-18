@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard do HomeWise para acompanhamento do consumo residencial de água e energia.">
+  <meta name="theme-color" content="#0b1f2a">
+  <title>HomeWise | Painel de consumo</title>
+  <link rel="icon" href="assets/logo-homewise.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+      <div class="sidebar__top">
+        <a class="brand" href="#visao-geral" aria-label="HomeWise - início">
+          <img src="assets/logo-homewise.svg" alt="" width="42" height="42">
+          <span class="brand__text">
+            <strong>Home<span>Wise</span></strong>
+            <small>Consumo inteligente</small>
+          </span>
+        </a>
+
+        <nav class="main-nav" aria-label="Navegação do painel">
+          <p class="nav-label">Painel</p>
+          <a class="nav-link is-active" href="#visao-geral" data-section="visao-geral">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+            <span>Visão geral</span>
+          </a>
+          <a class="nav-link" href="#historico" data-section="historico">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18v-2H5V3H3Zm15.6 4.4-4.1 4.1-3-3L6 14l1.5 1.5 4-4 3 3L20 9l-1.4-1.6Z"/></svg>
+            <span>Histórico</span>
+          </a>
+          <a class="nav-link" href="#alertas" data-section="alertas">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+            <span>Alertas</span>
+            <span class="nav-badge" aria-label="1 alerta">1</span>
+          </a>
+
+          <p class="nav-label">Sistema</p>
+          <a class="nav-link" href="#dispositivos" data-section="dispositivos">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 2h8a2 2 0 0 1 2 2v2h1a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-1v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2H5a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3h1V4a2 2 0 0 1 2-2Zm0 2v16h8V4H8Zm-3 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1V8H5Zm13 0v8h1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-1Zm-8 3h4v2h-4v-2Z"/></svg>
+            <span>Dispositivos</span>
+          </a>
+          <a class="nav-link" href="#sobre" data-section="sobre">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6Zm1-15a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1-11h2V7h-2v2Z"/></svg>
+            <span>Sobre o projeto</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-status">
+        <div class="sidebar-status__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Zm0 16a7 7 0 1 1 7-7 7 7 0 0 1-7 7Zm-1-11h2v5h-2V8Zm0 7h2v2h-2v-2Z"/></svg>
+        </div>
+        <div>
+          <strong>Modo demonstração</strong>
+          <span>Dados simulados</span>
+        </div>
+      </div>
+    </aside>
+
+    <button class="sidebar-overlay" id="sidebarOverlay" aria-label="Fechar menu" tabindex="-1"></button>
+
+    <main class="main-content" id="conteudo-principal">
+      <header class="topbar">
+        <div class="topbar__left">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z"/></svg>
+          </button>
+          <div>
+            <p class="eyebrow" id="greeting">Olá!</p>
+            <h1>Painel de consumo</h1>
+          </div>
+        </div>
+
+        <div class="topbar__actions">
+          <button class="secondary-button" id="exportButton" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M11 3h2v10.17l3.59-3.58L18 11l-6 6-6-6 1.41-1.41L11 13.17V3Zm-6 16h14v2H5v-2Z"/></svg>
+            <span>Exportar dados</span>
+          </button>
+          <button class="profile-button" type="button" aria-label="Perfil de Rafael de Aquino">
+            <span>RA</span>
+            <span class="profile-button__copy">
+              <strong>Rafael</strong>
+              <small>Administrador</small>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrap">
+        <section class="demo-notice" aria-label="Aviso de demonstração">
+          <div class="demo-notice__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M13 2.05V4.1A8 8 0 1 1 4.1 13H2.05A10 10 0 1 0 13 2.05ZM11 2.05A10 10 0 0 0 2.05 11H4.1A8 8 0 0 1 11 4.1V2.05Zm1 4.45a5.5 5.5 0 1 0 5.5 5.5A5.51 5.51 0 0 0 12 6.5Zm-.75 2h1.5v4.12l2.58 1.49-.75 1.3-3.33-1.93V8.5Z"/></svg>
+          </div>
+          <div class="demo-notice__copy">
+            <strong>Visualização inicial do sistema</strong>
+            <p>Os valores abaixo são simulados. Eles serão substituídos pelas medições do ESP8266 quando a API REST estiver conectada.</p>
+          </div>
+          <span class="status-pill status-pill--demo"><span></span> Demonstração</span>
+        </section>
+
+        <section id="visao-geral" class="page-section section-anchor" aria-labelledby="overviewTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Visão geral</p>
+              <h2 id="overviewTitle">Resumo de hoje</h2>
+            </div>
+            <p class="last-update">Atualizado <time id="lastUpdate">agora</time></p>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card metric-card--water">
+              <div class="metric-card__top">
+                <span class="metric-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 2.4 6.35 8.77a7.17 7.17 0 1 0 11.3 0L12 2.4Zm0 17.1a5.17 5.17 0 0 1-4.15-8.26L12 6.56l4.15 4.68A5.17 5.17 0 0 1 12 19.5Zm-2.7-5.1a2.87 2.87 0 0 0 2.7 1.9v1.5a4.37 4.37 0 0 1-4.1-2.9l1.4-.5Z"/></svg>
+                </span>
+                <span class="trend trend--down">
+                  <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.7 5.3 3.55 3.55V2h1.5v6.85L12.3 5.3l1.05 1.06L8 11.71 2.65 6.36 3.7 5.3Z"/></svg>
+                  8,4%
+                </span>
+              </div>
+              <p>Consumo de água</p>
+              <div class="metric-value"><strong id="waterToday">142</strong><span>L hoje</span></div>
+              <small>13 L abaixo da média diária</small>
+            </article>
+
+            <article class="metric-card metric-card--energy">
+              <div class="metric-card__top">
+                <span class="metric-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.2 9L19 11h-6l.2-9Zm.73 11h1.1l-2.1 2.82.1-4.82H9l2.07-2.78L11 13h2.93Z"/></svg>
+                </span>
+                <span class="trend trend--up">
+                  <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.7 10.7 3.55-3.55V14h1.5V7.15l3.55 3.55 1.05-1.06L8 4.29 2.65 9.64 3.7 10.7Z"/></svg>
+                  5,1%
+                </span>
+              </div>
+              <p>Consumo de energia</p>
+              <div class="metric-value"><strong id="energyToday">4,82</strong><span>kWh hoje</span></div>
+              <small>0,23 kWh acima da média diária</small>
+            </article>
+
+            <article class="metric-card metric-card--projection">
+              <div class="metric-card__top">
+                <span class="metric-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v14h14V5H5Zm2 10h2v2H7v-2Zm4-4h2v6h-2v-6Zm4-4h2v10h-2V7Z"/></svg>
+                </span>
+                <span class="tag">Estimativa</span>
+              </div>
+              <p>Previsão mensal</p>
+              <div class="metric-value"><strong>4.260</strong><span>L de água</span></div>
+              <small>Energia prevista: 144,6 kWh</small>
+            </article>
+
+            <article class="metric-card metric-card--alert">
+              <div class="metric-card__top">
+                <span class="metric-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 3 1.8 20h20.4L12 3Zm0 4 6.67 11H5.33L12 7Zm-1 3v4h2v-4h-2Zm0 5.5v2h2v-2h-2Z"/></svg>
+                </span>
+                <span class="tag tag--warning">Atenção</span>
+              </div>
+              <p>Alertas de consumo</p>
+              <div class="metric-value"><strong>1</strong><span>alerta ativo</span></div>
+              <small>Energia acima de 20% no dia 15</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel consumption-panel">
+              <div class="panel-header panel-header--wrap">
+                <div>
+                  <p class="eyebrow">Histórico recente</p>
+                  <h3>Consumo diário</h3>
+                </div>
+                <div class="panel-controls">
+                  <div class="segmented-control" role="group" aria-label="Tipo de consumo">
+                    <button class="segment is-active" type="button" data-metric="water">Água</button>
+                    <button class="segment" type="button" data-metric="energy">Energia</button>
+                  </div>
+                  <label class="select-field">
+                    <span class="sr-only">Período do gráfico</span>
+                    <select id="periodSelect">
+                      <option value="7">7 dias</option>
+                      <option value="14">14 dias</option>
+                      <option value="30">30 dias</option>
+                    </select>
+                    <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4H4Z"/></svg>
+                  </label>
+                </div>
+              </div>
+
+              <div class="chart-summary" aria-live="polite">
+                <div>
+                  <span id="chartLabel">Total no período</span>
+                  <strong id="chartTotal">1.056 L</strong>
+                </div>
+                <span class="comparison" id="chartComparison">−6,2% em relação ao período anterior</span>
+              </div>
+
+              <div class="chart" id="consumptionChart" role="img" aria-label="Gráfico de consumo de água nos últimos 7 dias"></div>
+              <div class="chart-legend">
+                <span><i class="legend-dot legend-dot--primary"></i><span id="legendCurrent">Consumo de água</span></span>
+                <span><i class="legend-line"></i>Média diária</span>
+              </div>
+            </article>
+
+            <article class="panel goals-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Planejamento</p>
+                  <h3>Metas do mês</h3>
+                </div>
+                <span class="month-label" id="currentMonth">Setembro</span>
+              </div>
+
+              <div class="goal-item">
+                <div class="goal-item__header">
+                  <span class="goal-icon goal-icon--water" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.4 6.35 8.77a7.17 7.17 0 1 0 11.3 0L12 2.4Zm0 17.1a5.17 5.17 0 0 1-4.15-8.26L12 6.56l4.15 4.68A5.17 5.17 0 0 1 12 19.5Z"/></svg>
+                  </span>
+                  <div>
+                    <strong>Água</strong>
+                    <small>Meta: 5.000 L</small>
+                  </div>
+                  <span class="goal-percent">85%</span>
+                </div>
+                <div class="progress-track"><span class="progress-fill progress-fill--water" style="--progress: 85%"></span></div>
+                <div class="goal-item__footer"><span>Previsão: 4.260 L</span><strong>Dentro da meta</strong></div>
+              </div>
+
+              <div class="goal-item">
+                <div class="goal-item__header">
+                  <span class="goal-icon goal-icon--energy" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.2 9L19 11h-6l.2-9Zm.73 11h1.1l-2.1 2.82.1-4.82H9l2.07-2.78L11 13h2.93Z"/></svg>
+                  </span>
+                  <div>
+                    <strong>Energia</strong>
+                    <small>Meta: 180 kWh</small>
+                  </div>
+                  <span class="goal-percent">80%</span>
+                </div>
+                <div class="progress-track"><span class="progress-fill progress-fill--energy" style="--progress: 80%"></span></div>
+                <div class="goal-item__footer"><span>Previsão: 144,6 kWh</span><strong>Dentro da meta</strong></div>
+              </div>
+
+              <div class="tip-card">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21h6v-1H9v1Zm3-19a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2Zm2.85 11.1-.85.5V17h-4v-3.4l-.85-.5A5 5 0 1 1 14.85 13.1Z"/></svg>
+                <p><strong>Dica HomeWise</strong><span>Reduzir o banho em 2 minutos pode economizar até 24 litros por pessoa.</span></p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="insights-grid page-section">
+          <article class="panel section-anchor" id="alertas">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Análise automática</p>
+                <h3>Alertas e insights</h3>
+              </div>
+              <span class="status-pill status-pill--warning"><span></span> 1 ativo</span>
+            </div>
+
+            <div class="alert-list">
+              <div class="alert-item alert-item--warning">
+                <span class="alert-item__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.2 9L19 11h-6l.2-9Z"/></svg>
+                </span>
+                <div class="alert-item__content">
+                  <div><strong>Energia acima do padrão</strong><time>Dia 15</time></div>
+                  <p>O consumo ficou 24% acima da média dos dias anteriores.</p>
+                </div>
+              </div>
+              <div class="alert-item alert-item--success">
+                <span class="alert-item__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="m9.55 17.45-5-5L6 11l3.55 3.55L18 6.1l1.45 1.45-9.9 9.9Z"/></svg>
+                </span>
+                <div class="alert-item__content">
+                  <div><strong>Água dentro da média</strong><time>Hoje</time></div>
+                  <p>O consumo atual está 8,4% menor que a média diária.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel section-anchor" id="dispositivos">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Hardware</p>
+                <h3>Dispositivos</h3>
+              </div>
+              <span class="status-pill status-pill--pending"><span></span> API pendente</span>
+            </div>
+
+            <div class="device-list">
+              <div class="device-item">
+                <span class="device-item__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M8 2h8a2 2 0 0 1 2 2v2h1a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-1v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2H5a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3h1V4a2 2 0 0 1 2-2Zm0 2v16h8V4H8Z"/></svg>
+                </span>
+                <div><strong>LOLIN NodeMCU V3</strong><small>Controlador ESP8266</small></div>
+                <span class="device-state device-state--pending">Aguardando</span>
+              </div>
+              <div class="device-item">
+                <span class="device-item__icon device-item__icon--water" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 2.4 6.35 8.77a7.17 7.17 0 1 0 11.3 0L12 2.4Zm0 17.1a5.17 5.17 0 0 1-4.15-8.26L12 6.56l4.15 4.68A5.17 5.17 0 0 1 12 19.5Z"/></svg>
+                </span>
+                <div><strong>YF-S201</strong><small>Sensor de vazão de água</small></div>
+                <span class="device-state device-state--ready">Configurado</span>
+              </div>
+              <div class="device-item">
+                <span class="device-item__icon device-item__icon--energy" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M13.2 2 5 13h6l-.2 9L19 11h-6l.2-9Z"/></svg>
+                </span>
+                <div><strong>PZEM-004T v3</strong><small>Monitor de energia</small></div>
+                <span class="device-state device-state--ready">Configurado</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel history-panel page-section section-anchor" id="historico" aria-labelledby="historyTitle">
+          <div class="panel-header panel-header--wrap">
+            <div>
+              <p class="eyebrow">Registros diários</p>
+              <h2 id="historyTitle">Histórico de consumo</h2>
+            </div>
+            <div class="history-summary">
+              <span><i class="status-dot status-dot--success"></i>6 dias normais</span>
+              <span><i class="status-dot status-dot--warning"></i>1 anormal</span>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Dia</th>
+                  <th scope="col">Água</th>
+                  <th scope="col">Energia</th>
+                  <th scope="col">Comparação</th>
+                  <th scope="col">Situação</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="about-panel page-section section-anchor" id="sobre" aria-labelledby="aboutTitle">
+          <div class="about-panel__copy">
+            <p class="eyebrow">Projeto de conclusão de curso</p>
+            <h2 id="aboutTitle">Tecnologia para um consumo mais consciente</h2>
+            <p>O HomeWise reúne medições de água e energia em um só painel. A proposta é facilitar a leitura do consumo, identificar aumentos fora do padrão e estimar o total do mês antes da conta chegar.</p>
+            <div class="about-tags" aria-label="Tecnologias do projeto">
+              <span>ESP8266</span><span>YF-S201</span><span>PZEM-004T</span><span>API REST</span><span>MySQL</span>
+            </div>
+          </div>
+          <ol class="architecture-flow" aria-label="Fluxo planejado do sistema">
+            <li><span>01</span><div><strong>Sensores</strong><small>Coleta das medições</small></div></li>
+            <li><span>02</span><div><strong>ESP8266</strong><small>Processamento e Wi-Fi</small></div></li>
+            <li><span>03</span><div><strong>API + banco</strong><small>Armazenamento seguro</small></div></li>
+            <li><span>04</span><div><strong>Dashboard</strong><small>Análise dos dados</small></div></li>
+          </ol>
+        </section>
+
+        <footer class="footer">
+          <span>HomeWise <span id="currentYear"></span> • Projeto acadêmico</span>
+          <span>Dados da tela usados apenas para demonstração</span>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9.55 17.45-5-5L6 11l3.55 3.55L18 6.1l1.45 1.45-9.9 9.9Z"/></svg>
+    <span>Arquivo exportado com sucesso.</span>
+  </div>
+
+  <noscript>
+    <div class="noscript-message">Ative o JavaScript para visualizar os gráficos e o histórico do HomeWise.</div>
+  </noscript>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>

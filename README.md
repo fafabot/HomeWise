@@ -14,6 +14,7 @@ A HomeWise monitora o consumo residencial de agua e energia. O controlador ofici
 - Media diaria e previsao mensal.
 - Indicacao de consumo anormal acima de 20% da media anterior.
 - Dia acelerado de 10 segundos para testar a logica durante o desenvolvimento.
+- Dashboard web responsivo com dados de demonstracao.
 
 ## Controlador e PlatformIO
 
@@ -67,6 +68,21 @@ Use conversao de nivel logico entre a UART de 5 V do PZEM e o ESP8266 de 3,3 V.
 7. Deixe o teste do PZEM para o final.
 
 Sem o PZEM respondendo, os valores de tensao, corrente e potencia permanecem em zero.
+
+## Interface web
+
+O dashboard esta na pasta [`web`](web). Ele foi criado com HTML, CSS e JavaScript puros, sem dependencias, e pode ser aberto diretamente pelo arquivo `web/index.html` ou com a extensao Live Server do VS Code.
+
+A primeira versao inclui:
+
+- Resumo diario de agua e energia.
+- Grafico para 7, 14 e 30 dias.
+- Metas e previsoes mensais.
+- Alertas de consumo fora do padrao.
+- Historico recente e exportacao CSV.
+- Layout responsivo para computador e celular.
+
+Os valores atuais sao demonstrativos. A propria tela informa isso e a estrutura esta preparada para receber os dados da futura API REST.
 
 ## Seguranca eletrica
 
