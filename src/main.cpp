@@ -6,6 +6,7 @@
 #include "agua.h"
 #include "analise.h"
 #include "config.h"
+#include "comunicacao.h"
 #include "energia.h"
 #include "historico.h"
 #include "tempo.h"
@@ -150,6 +151,7 @@ void setup() {
     iniciarEnergia();
     iniciarTempo();
     iniciarHistorico();
+    iniciarComunicacao();
 
     Serial.println("Sistema pronto!");
 }
@@ -157,7 +159,9 @@ void setup() {
 void loop() {
     atualizarAgua();
     atualizarEnergia();
+    atualizarComunicacao();
     updateDisplay();
+    enviarDadosSimulados();
 
     int diaFinalizado = verificarDia();
     if (diaFinalizado != 0) {
