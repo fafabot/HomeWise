@@ -30,10 +30,15 @@ constexpr int SIMULATED_DAYS_IN_MONTH = 30;
 constexpr unsigned long SIMULATED_DAY_DURATION_MS = 10000UL;
 constexpr float ABNORMAL_CONSUMPTION_FACTOR = 1.20f;
 
+// Comunicacao HTTP
+// Substitua pelo endereco real da API quando o backend estiver disponivel.
+constexpr char HOMEWISE_API_URL[] = "http://SEU_SERVIDOR/api/dados";
+
 // Temporizacao e Serial
 constexpr unsigned long SERIAL_BAUD = 115200UL;
 constexpr unsigned long ENERGY_READ_INTERVAL_MS = 1000UL;
 constexpr unsigned long REPORT_INTERVAL_MS = 2000UL;
 constexpr unsigned long DISPLAY_INTERVAL_MS = 300UL;
+constexpr unsigned long API_SEND_INTERVAL_MS = 5000UL;
 
 #endif
