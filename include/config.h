@@ -9,6 +9,7 @@
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
 constexpr unsigned long WATER_PULSES_PER_EVENT = 1UL;
 constexpr float WATER_PULSES_PER_LITER = 450.0f;
+constexpr unsigned long WATER_FLOW_READ_INTERVAL_MS = 1000UL;
 
 // PZEM-004T v3 usando SoftwareSerial
 // RX do ESP8266 recebe o TX do PZEM; TX do ESP8266 envia ao RX do PZEM.
@@ -36,4 +37,3 @@ constexpr unsigned long REPORT_INTERVAL_MS = 2000UL;
 constexpr unsigned long DISPLAY_INTERVAL_MS = 300UL;
 
 #endif
-
