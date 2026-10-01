@@ -1,0 +1,10 @@
+#ifndef CREDENCIAIS_H
+#define CREDENCIAIS_H
+
+// Preencha localmente com os dados da sua rede.
+// Este arquivo esta no .gitignore e NAO deve ser enviado ao GitHub.
+
+constexpr char WIFI_SSID[] = "SEU_WIFI";
+constexpr char WIFI_PASSWORD[] = "SUA_SENHA";
+
+#endif
