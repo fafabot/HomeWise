@@ -7,6 +7,7 @@ A HomeWise monitora o consumo residencial de agua e energia. O controlador ofici
 ## O que ja funciona
 
 - Contagem dos pulsos fisicos do YF-S201 por interrupcao.
+- Calculo de vazao em L/min a partir dos pulsos reais do sensor.
 - Conversao inicial de 450 pulsos para 1 litro, com calibracao futura.
 - Leitura do PZEM-004T v3 por `SoftwareSerial`.
 - Exibicao dos valores no OLED e no Monitor Serial.
@@ -94,9 +95,9 @@ Sensor de vazao / PZEM -> ESP8266 -> Wi-Fi -> API REST -> MySQL -> Dashboard
 
 ## Proximas etapas
 
-1. Calibrar o YF-S201.
+1. Calibrar o YF-S201 e validar a vazao em L/min.
 2. Validar a comunicacao e as medicoes do PZEM-004T.
-3. Substituir o dia acelerado por data e hora reais.
+3. Substituir o dia acelerado por data e hora reais sem alterar o historico.
 4. Implementar Wi-Fi e envio HTTP/JSON.
 5. Integrar API, MySQL e dashboard.
 
