@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 
 #include "comunicacao.h"
 #include "config.h"
@@ -10,7 +11,6 @@ static unsigned long ultimoEnvioSimulado = 0;
 static unsigned long contadorDados = 0;
 
 constexpr unsigned long WIFI_RECONNECT_INTERVAL_MS = 10000UL;
-constexpr unsigned long SIMULATED_DATA_INTERVAL_MS = 5000UL;
 
 void iniciarComunicacao() {
     WiFi.mode(WIFI_STA);
@@ -63,7 +63,7 @@ void enviarDadosSimulados() {
 
     unsigned long agora = millis();
 
-    if (agora - ultimoEnvioSimulado < SIMULATED_DATA_INTERVAL_MS) {
+    if (agora - ultimoEnvioSimulado < API_SEND_INTERVAL_MS) {
         return;
     }
 
@@ -72,22 +72,42 @@ void enviarDadosSimulados() {
     DadosComunicacao dados = obterDadosSimulados();
 
     Serial.println();
-    Serial.println("[COMUNICACAO] Dados simulados:");
+    Serial.println("[COMUNICACAO] Enviando dados para a API...");
 
-    Serial.print("Wi-Fi: ");
-    Serial.println(WiFi.SSID());
+    String payload = "{";
+    payload += "\"agua\":" + String(dados.agua, 2);
+    payload += ",\"vazao\":" + String(dados.vazao, 2);
+    payload += ",\"energia\":" + String(dados.energia, 3);
+    payload += ",\"potencia\":" + String(dados.potencia, 1);
+    payload += "}";
 
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
+    Serial.print("[COMUNICACAO] JSON: ");
+    Serial.println(payload);
 
-    Serial.println("JSON simulado:");
-    Serial.print("{\"agua\":");
-    Serial.print(dados.agua, 2);
-    Serial.print(",\"vazao\":");
-    Serial.print(dados.vazao, 2);
-    Serial.print(",\"energia\":");
-    Serial.print(dados.energia, 3);
-    Serial.print(",\"potencia\":");
-    Serial.print(dados.potencia, 1);
-    Serial.println("}");
+    WiFiClient client;
+    HTTPClient http;
+
+    if (!http.begin(client, HOMEWISE_API_URL)) {
+        Serial.println("[COMUNICACAO] ERRO: nao foi possivel iniciar HTTP.");
+        return;
+    }
+
+    http.addHeader("Content-Type", "application/json");
+
+    int codigoHTTP = http.POST(payload);
+
+    Serial.print("[COMUNICACAO] Codigo HTTP: ");
+    Serial.println(codigoHTTP);
+
+    if (codigoHTTP > 0) {
+        String resposta = http.getString();
+
+        Serial.print("[COMUNICACAO] Resposta da API: ");
+        Serial.println(resposta);
+    } else {
+        Serial.print("[COMUNICACAO] ERRO no POST: ");
+        Serial.println(http.errorToString(codigoHTTP));
+    }
+
+    http.end();
 }
