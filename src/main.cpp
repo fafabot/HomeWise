@@ -35,6 +35,9 @@ void updateDisplay() {
     display.println(" L");
     display.print("Pulsos: ");
     display.println(obterPulsos());
+    display.print("Vazao: ");
+    display.print(obterVazao(), 2);
+    display.println(" L/min");
     display.print("Energia: ");
     display.print(obterEnergia(), 4);
     display.println(" kWh");
@@ -52,6 +55,9 @@ void printReport() {
     Serial.print("Agua: ");
     Serial.print(obterLitros(), 3);
     Serial.println(" L");
+    Serial.print("Vazao: ");
+    Serial.print(obterVazao(), 2);
+    Serial.println(" L/min");
     Serial.print("Tensao: ");
     Serial.print(obterTensao(), 1);
     Serial.println(" V");
