@@ -7,6 +7,10 @@ static volatile unsigned long pulsosAgua = 0;
 static float litros = 0.0f;
 static float vazao = 0.0f;
 
+static unsigned long pulsosAnterioresVazao = 0;
+static unsigned long momentoUltimaVazao = 0;
+static bool vazaoInicializada = false;
+
 static unsigned long copiarPulsosComSeguranca() {
     noInterrupts();
     unsigned long copia = pulsosAgua;
@@ -20,15 +24,51 @@ void ICACHE_RAM_ATTR contarPulso() {
 
 void iniciarAgua() {
     pinMode(WATER_SENSOR_PIN, INPUT_PULLUP);
+
     attachInterrupt(
         digitalPinToInterrupt(WATER_SENSOR_PIN),
         contarPulso,
         FALLING
     );
+
+    litros = 0.0f;
+    vazao = 0.0f;
+    pulsosAnterioresVazao = 0;
+    momentoUltimaVazao = millis();
+    vazaoInicializada = false;
 }
 
 void atualizarAgua() {
-    litros = copiarPulsosComSeguranca() / WATER_PULSES_PER_LITER;
+    unsigned long pulsosAtuais = copiarPulsosComSeguranca();
+
+    litros = pulsosAtuais / WATER_PULSES_PER_LITER;
+
+    unsigned long agora = millis();
+
+    if (!vazaoInicializada) {
+        pulsosAnterioresVazao = pulsosAtuais;
+        momentoUltimaVazao = agora;
+        vazaoInicializada = true;
+        vazao = 0.0f;
+        return;
+    }
+
+    unsigned long tempoDecorrido = agora - momentoUltimaVazao;
+
+    if (tempoDecorrido < WATER_FLOW_READ_INTERVAL_MS) {
+        return;
+    }
+
+    unsigned long pulsosDecorridos = pulsosAtuais - pulsosAnterioresVazao;
+
+    float litrosDecorridos =
+        pulsosDecorridos / WATER_PULSES_PER_LITER;
+
+    vazao =
+        litrosDecorridos * 60000.0f / tempoDecorrido;
+
+    pulsosAnterioresVazao = pulsosAtuais;
+    momentoUltimaVazao = agora;
 }
 
 float obterLitros() {
@@ -50,5 +90,8 @@ void resetarConsumoDiarioAgua() {
 
     litros = 0.0f;
     vazao = 0.0f;
-}
 
+    pulsosAnterioresVazao = 0;
+    momentoUltimaVazao = millis();
+    vazaoInicializada = false;
+}
