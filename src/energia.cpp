@@ -1,44 +1,13 @@
 #include <Arduino.h>
-// src/energia.cpp
 #include <PZEM004Tv30.h>
 #include <SoftwareSerial.h>
-
-// D5 (GPIO14) ligado ao TX do PZEM; D6 (GPIO12) ligado ao RX do PZEM
-SoftwareSerial serialPzem(D5, D6);
-PZEM004Tv30 pzem(serialPzem);
-
-struct LeituraEletrica {
-    float tensao;
-    float corrente;
-    float potencia;
-    float energiaAcumulada;
-};
-
-void inicializarSensorEnergia() {
-    serialPzem.begin(9600);
-}
-
-LeituraEletrica obterLeituraEletrica() {
-    LeituraEletrica leitura;
-    leitura.tensao = pzem.voltage();
-    leitura.corrente = pzem.current();
-    leitura.potencia = pzem.power();
-    leitura.energiaAcumulada = pzem.energy(); // em kWh
-
-    // Tratamento para evitar envio de valores nulos (NaN) em caso de desconexão
-    if (isnan(leitura.tensao)) leitura.tensao = 0.0;
-    if (isnan(leitura.corrente)) leitura.corrente = 0.0;
-    if (isnan(leitura.potencia)) leitura.potencia = 0.0;
-    if (isnan(leitura.energiaAcumulada)) leitura.energiaAcumulada = 0.0;
-
-    return leitura;
-}
 
 #include "config.h"
 #include "energia.h"
 
-SoftwareSerial pzemSerial(PZEM_RX_PIN, PZEM_TX_PIN);
-PZEM004Tv30 pzem(pzemSerial);
+// RX do ESP8266 recebe o TX do PZEM; TX do ESP8266 envia ao RX do PZEM.
+static SoftwareSerial pzemSerial(PZEM_RX_PIN, PZEM_TX_PIN);
+static PZEM004Tv30 pzem(pzemSerial);
 
 static float tensao = 0.0f;
 static float corrente = 0.0f;
@@ -51,6 +20,8 @@ static bool baseEnergiaInicializada = false;
 static unsigned long ultimaLeitura = 0;
 
 void iniciarEnergia() {
+    pzemSerial.begin(9600);
+
     tensao = 0.0f;
     corrente = 0.0f;
     potencia = 0.0f;
@@ -62,24 +33,21 @@ void iniciarEnergia() {
 }
 
 void atualizarEnergia() {
-    unsigned long agora = millis();
-
+    const unsigned long agora = millis();
     if (agora - ultimaLeitura < ENERGY_READ_INTERVAL_MS) {
         return;
     }
 
     ultimaLeitura = agora;
 
-    float novaTensao = pzem.voltage();
-    float novaCorrente = pzem.current();
-    float novaPotencia = pzem.power();
-    float novaEnergiaTotal = pzem.energy();
+    const float novaTensao = pzem.voltage();
+    const float novaCorrente = pzem.current();
+    const float novaPotencia = pzem.power();
+    const float novaEnergiaTotal = pzem.energy();
 
     if (isnan(novaTensao) || isnan(novaCorrente) ||
         isnan(novaPotencia) || isnan(novaEnergiaTotal)) {
-        tensao = 0.0f;
-        corrente = 0.0f;
-        potencia = 0.0f;
+        // Mantem a ultima leitura valida quando o PZEM falhar temporariamente.
         return;
     }
 
@@ -94,7 +62,6 @@ void atualizarEnergia() {
     }
 
     energia = energiaTotalKWh - energiaBaseKWh;
-
     if (energia < 0.0f) {
         energiaBaseKWh = energiaTotalKWh;
         energia = 0.0f;
@@ -111,7 +78,5 @@ void resetarConsumoDiarioEnergia() {
     if (baseEnergiaInicializada) {
         energiaBaseKWh = energiaTotalKWh;
     }
-
     energia = 0.0f;
 }
-
