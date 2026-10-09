@@ -6,3 +6,7 @@
 
 # Credenciais locais do Wi-Fi
 include/credenciais.h
+
+# Configuracao local e dependencias da API
+api/.env
+api/node_modules/
