@@ -1,19 +1,16 @@
-#ifndef CONFIG_H
-#define CONFIG_H
-
-// Dados da sua rede Wi-Fi local
-const char* WIFI_SSID = "NOME_DO_SEU_WIFI";
-const char* WIFI_PASS = "SENHA_DO_SEU_WIFI";
-
-// Substitua pelo IP da máquina servidora na rede local (ex: obtido via ipconfig no Windows)
-const char* API_URL = "http://192.168.1.105:3000/api/dados";
-const char* DISPOSITIVO_ID = "central_homewise_01";
-
-#endif
+#ifndef HOMEWISE_CONFIG_H
+#define HOMEWISE_CONFIG_H
 
 #include <Arduino.h>
 
-// Controlador oficial: LOLIN NodeMCU V3 (ESP8266)
+// Controlador: LOLIN NodeMCU V3 (ESP8266)
+
+// Identificador enviado à API.
+constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
+
+// Configure o IP do computador que executa a API na mesma rede Wi-Fi.
+// Nao use localhost aqui: localhost apontaria para o proprio ESP8266.
+constexpr char HOMEWISE_API_URL[] = "http://192.168.1.100:3000/api/dados";
 
 // Sensor de vazao YF-S201
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
@@ -21,8 +18,8 @@ constexpr unsigned long WATER_PULSES_PER_EVENT = 1UL;
 constexpr float WATER_PULSES_PER_LITER = 450.0f;
 constexpr unsigned long WATER_FLOW_READ_INTERVAL_MS = 1000UL;
 
-// PZEM-004T v3 usando SoftwareSerial
-// RX do ESP8266 recebe o TX do PZEM; TX do ESP8266 envia ao RX do PZEM.
+// PZEM-004T v3 usando SoftwareSerial.
+// TX do PZEM -> D6/RX do ESP8266; RX do PZEM <- D7/TX do ESP8266.
 constexpr uint8_t PZEM_RX_PIN = D6;  // GPIO12
 constexpr uint8_t PZEM_TX_PIN = D7;  // GPIO13
 
@@ -40,11 +37,7 @@ constexpr int SIMULATED_DAYS_IN_MONTH = 30;
 constexpr unsigned long SIMULATED_DAY_DURATION_MS = 10000UL;
 constexpr float ABNORMAL_CONSUMPTION_FACTOR = 1.20f;
 
-// Comunicacao HTTP
-// Substitua pelo endereco real da API quando o backend estiver disponivel.
-constexpr char HOMEWISE_API_URL[] = "http://SEU_SERVIDOR/api/dados";
-
-// Temporizacao e Serial
+// Temporizacao
 constexpr unsigned long SERIAL_BAUD = 115200UL;
 constexpr unsigned long ENERGY_READ_INTERVAL_MS = 1000UL;
 constexpr unsigned long REPORT_INTERVAL_MS = 2000UL;
