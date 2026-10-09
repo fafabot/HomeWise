@@ -17,7 +17,7 @@ static unsigned long copiarPulsosComSeguranca() {
     return copia;
 }
 
-void ICACHE_RAM_ATTR contarPulso() {
+void IRAM_ATTR contarPulso() {
     pulsosAgua += WATER_PULSES_PER_EVENT;
 }
 
