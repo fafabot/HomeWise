@@ -1,0 +1,36 @@
+name: HomeWise checks
+
+on:
+  push:
+    branches:
+      - main
+      - fix/firmware-wifi-api-mysql
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  api:
+    name: Validate API JavaScript
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run check
+
+  firmware:
+    name: Build ESP8266 firmware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: pip install platformio
+      - run: pio run -e nodemcuv2
