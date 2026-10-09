@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
@@ -22,10 +24,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json({ limit: "32kb" }));
 
 function numberOrUndefined(value) {
-    if (value === undefined || value === null || value === "") {
-        return undefined;
-    }
-
+    if (value === undefined || value === null || value === "") return undefined;
     const number = Number(value);
     return Number.isFinite(number) ? number : undefined;
 }
@@ -44,8 +43,7 @@ function normalizeReading(body) {
     const values = { agua, vazao, energia, potencia, tensao };
     const invalidFields = Object.entries(values)
         .filter(([field, value]) =>
-            value === undefined ||
-            value < 0 ||
+            value === undefined || value < 0 ||
             (field === "tensao" && value > 300) ||
             (field === "vazao" && value > 10000) ||
             (field === "potencia" && value > 100000) ||
@@ -54,12 +52,10 @@ function normalizeReading(body) {
         )
         .map(([field]) => field);
 
-    if (invalidFields.length > 0) {
-        return { error: invalidFields };
-    }
+    if (invalidFields.length) return { error: invalidFields };
 
     const deviceId = firstDefined(body.dispositivo_id, DEFAULT_DEVICE_ID);
-    if (typeof deviceId !== "string" || deviceId.trim().length === 0 || deviceId.length > 50) {
+    if (typeof deviceId !== "string" || !deviceId.trim() || deviceId.length > 50) {
         return { error: ["dispositivo_id"] };
     }
 
@@ -113,19 +109,14 @@ app.post("/api/dados", async (req, res) => {
     }
 
     const reading = normalized.data;
-
     try {
         const [result] = await pool.execute(
             `INSERT INTO leituras
                 (dispositivo_id, consumo_agua_litros, vazao_l_min, potencia_w, energia_kwh, tensao_v)
              VALUES (?, ?, ?, ?, ?, ?)`,
             [
-                reading.dispositivo_id,
-                reading.consumo_agua_litros,
-                reading.vazao_l_min,
-                reading.potencia_w,
-                reading.energia_kwh,
-                reading.tensao_v
+                reading.dispositivo_id, reading.consumo_agua_litros, reading.vazao_l_min,
+                reading.potencia_w, reading.energia_kwh, reading.tensao_v
             ]
         );
 
@@ -153,20 +144,15 @@ app.get("/api/dashboard", async (req, res) => {
         const [latestRows] = await pool.execute(
             `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
                     potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras
-             WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC
-             LIMIT 1`,
+             FROM leituras WHERE dispositivo_id = ?
+             ORDER BY criado_em DESC, id DESC LIMIT 1`,
             [deviceId]
         );
-
         const [historyRows] = await pool.execute(
             `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
                     potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras
-             WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC
-             LIMIT 30`,
+             FROM leituras WHERE dispositivo_id = ?
+             ORDER BY criado_em DESC, id DESC LIMIT 30`,
             [deviceId]
         );
 
@@ -190,21 +176,16 @@ app.get("/api/historico", async (req, res) => {
         ? req.query.dispositivo_id
         : DEFAULT_DEVICE_ID;
     const requestedLimit = Number.parseInt(req.query.limite, 10);
-    const limit = Number.isInteger(requestedLimit)
-        ? Math.min(Math.max(requestedLimit, 1), 500)
-        : 100;
+    const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 500) : 100;
 
     try {
         const [rows] = await pool.execute(
             `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
                     potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras
-             WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC
-             LIMIT ?`,
+             FROM leituras WHERE dispositivo_id = ?
+             ORDER BY criado_em DESC, id DESC LIMIT ?`,
             [deviceId, limit]
         );
-
         return res.status(200).json({
             sucesso: true,
             dispositivo_id: deviceId,
@@ -222,17 +203,10 @@ app.get("/api/historico", async (req, res) => {
 
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
-        return res.status(400).json({
-            sucesso: false,
-            mensagem: "JSON invalido."
-        });
+        return res.status(400).json({ sucesso: false, mensagem: "JSON invalido." });
     }
-
     console.error("[API] Erro interno:", err.message);
-    return res.status(500).json({
-        sucesso: false,
-        mensagem: "Erro interno da API."
-    });
+    return res.status(500).json({ sucesso: false, mensagem: "Erro interno da API." });
 });
 
 const server = app.listen(PORT, "0.0.0.0", () => {
