@@ -1,6 +1,16 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// Dados da sua rede Wi-Fi local
+const char* WIFI_SSID = "NOME_DO_SEU_WIFI";
+const char* WIFI_PASS = "SENHA_DO_SEU_WIFI";
+
+// Substitua pelo IP da máquina servidora na rede local (ex: obtido via ipconfig no Windows)
+const char* API_URL = "http://192.168.1.105:3000/api/dados";
+const char* DISPOSITIVO_ID = "central_homewise_01";
+
+#endif
+
 #include <Arduino.h>
 
 // Controlador oficial: LOLIN NodeMCU V3 (ESP8266)

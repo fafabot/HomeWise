@@ -1,11 +1,70 @@
-#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
+#include "config.h"
+
+// Protótipos das funções auxiliares
+void inicializarSensorAgua();
+float obterVolumeLitros();
+struct LeituraEletrica { float tensao; float corrente; float potencia; float energiaAcumulada; };
+void inicializarSensorEnergia();
+LeituraEletrica obterLeituraEletrica();
+
+unsigned long ultimoEnvio = 0;
+const unsigned long INTERVALO_ENVIO_MS = 5000;
+
+void setup() {
+    Serial.begin(115200);
+    inicializarSensorAgua();
+    inicializarSensorEnergia();
+
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    Serial.print("Conectando ao Wi-Fi");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWi-Fi Conectado!");
+}
+
+void loop() {
+    if (millis() - ultimoEnvio >= INTERVALO_ENVIO_MS) {
+        ultimoEnvio = millis();
+
+        if (WiFi.status() == WL_CONNECTED) {
+            float volume = obterVolumeLitros();
+            LeituraEletrica eletrica = obterLeituraEletrica();
+
+            WiFiClient client;
+            HTTPClient http;
+            http.begin(client, API_URL);
+            http.addHeader("Content-Type", "application/json");
+
+            StaticJsonDocument<256> doc;
+            doc["dispositivo_id"] = DISPOSITIVO_ID;
+            doc["consumo_agua_litros"] = volume;
+            doc["potencia_w"] = eletrica.potencia;
+            doc["energia_kwh"] = eletrica.energiaAcumulada;
+            doc["tensao_v"] = eletrica.tensao;
+
+            String payload;
+            serializeJson(doc, payload);
+
+            int statusHttp = http.POST(payload);
+            Serial.printf("Envio realizado. Status HTTP: %d\n", statusHttp);
+            http.end();
+        } else {
+            Serial.println("Wi-Fi desconectado. Aguardando reconexão...");
+        }
+    }
+}
 
 #include "agua.h"
 #include "analise.h"
-#include "config.h"
 #include "comunicacao.h"
 #include "energia.h"
 #include "historico.h"

@@ -1,6 +1,38 @@
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+// src/energia.cpp
 #include <PZEM004Tv30.h>
+#include <SoftwareSerial.h>
+
+// D5 (GPIO14) ligado ao TX do PZEM; D6 (GPIO12) ligado ao RX do PZEM
+SoftwareSerial serialPzem(D5, D6);
+PZEM004Tv30 pzem(serialPzem);
+
+struct LeituraEletrica {
+    float tensao;
+    float corrente;
+    float potencia;
+    float energiaAcumulada;
+};
+
+void inicializarSensorEnergia() {
+    serialPzem.begin(9600);
+}
+
+LeituraEletrica obterLeituraEletrica() {
+    LeituraEletrica leitura;
+    leitura.tensao = pzem.voltage();
+    leitura.corrente = pzem.current();
+    leitura.potencia = pzem.power();
+    leitura.energiaAcumulada = pzem.energy(); // em kWh
+
+    // Tratamento para evitar envio de valores nulos (NaN) em caso de desconexão
+    if (isnan(leitura.tensao)) leitura.tensao = 0.0;
+    if (isnan(leitura.corrente)) leitura.corrente = 0.0;
+    if (isnan(leitura.potencia)) leitura.potencia = 0.0;
+    if (isnan(leitura.energiaAcumulada)) leitura.energiaAcumulada = 0.0;
+
+    return leitura;
+}
 
 #include "config.h"
 #include "energia.h"

@@ -1,4 +1,31 @@
+// src/agua.cpp
 #include <Arduino.h>
+
+// Pino D2 da NodeMCU (GPIO4)
+const uint8_t PINO_SENSOR_AGUA = D2;
+volatile unsigned long totalPulsos = 0;
+
+// Constante padrão do YF-S201: aprox. 450 pulsos por litro (ou 7.5 Hz para 1 L/min)
+const float FATOR_CALIBRACAO = 450.0; 
+
+void IRAM_ATTR contabilizarPulso() {
+    totalPulsos++;
+}
+
+void inicializarSensorAgua() {
+    pinMode(PINO_SENSOR_AGUA, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(PINO_SENSOR_AGUA), contabilizarPulso, RISING);
+}
+
+float obterVolumeLitros() {
+    noInterrupts();
+    unsigned long pulsos = totalPulsos;
+    totalPulsos = 0; // Reinicia a contagem para o próximo intervalo
+    interrupts();
+
+    if (pulsos == 0) return 0.0;
+    return (float)pulsos / FATOR_CALIBRACAO;
+}
 
 #include "agua.h"
 #include "config.h"
