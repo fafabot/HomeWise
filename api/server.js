@@ -2,23 +2,45 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2/promise");
+const path = require("path");
+const fs = require("fs");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const DEFAULT_DEVICE_ID = process.env.DEVICE_ID || "central_homewise_01";
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || "127.0.0.1",
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "homewise",
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    decimalNumbers: true
-});
+// Inicializacao do Firebase Admin SDK
+let db = null;
+
+try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        const firebaseApp = initializeApp({
+            credential: cert(serviceAccount)
+        });
+        db = getFirestore(firebaseApp);
+        console.log("[API] Firebase conectado via FIREBASE_SERVICE_ACCOUNT_KEY");
+    } else {
+        const localKeyPath = path.join(__dirname, "serviceAccountKey.json");
+
+        if (fs.existsSync(localKeyPath)) {
+            const serviceAccount = require(localKeyPath);
+            const firebaseApp = initializeApp({
+                credential: cert(serviceAccount)
+            });
+            db = getFirestore(firebaseApp);
+            console.log("[API] Firebase conectado com sucesso via serviceAccountKey.json local");
+        } else {
+            const firebaseApp = initializeApp();
+            db = getFirestore(firebaseApp);
+            console.log("[API] Firebase inicializado com Application Default Credentials");
+        }
+    }
+} catch (error) {
+    console.error("[API] Erro ao inicializar Firebase Admin:", error.message);
+}
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json({ limit: "32kb" }));
@@ -71,26 +93,26 @@ function normalizeReading(body) {
     };
 }
 
+// Health check
 app.get("/api/health", async (req, res) => {
-    try {
-        await pool.query("SELECT 1");
-        return res.status(200).json({
-            sucesso: true,
-            api: "online",
-            banco: "conectado",
-            mensagem: "API HomeWise e MySQL estao funcionando."
-        });
-    } catch (error) {
-        console.error("[API] MySQL indisponivel:", error.message);
+    if (!db) {
         return res.status(503).json({
             sucesso: false,
             api: "online",
-            banco: "indisponivel",
-            mensagem: "A API iniciou, mas nao conseguiu conectar ao MySQL. Confira as variaveis DB_* e o banco."
+            banco: "desconectado",
+            mensagem: "API online, mas o Firebase nao foi inicializado. Verifique serviceAccountKey.json."
         });
     }
+
+    return res.status(200).json({
+        sucesso: true,
+        api: "online",
+        banco: "conectado",
+        mensagem: "API HomeWise e Firebase Firestore estao funcionando perfeitamente."
+    });
 });
 
+// Ingestao de dados da Central (ESP8266)
 app.post("/api/dados", async (req, res) => {
     if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
         return res.status(400).json({
@@ -108,95 +130,121 @@ app.post("/api/dados", async (req, res) => {
         });
     }
 
+    if (!db) {
+        return res.status(503).json({
+            sucesso: false,
+            mensagem: "Firebase Firestore nao conectado no servidor."
+        });
+    }
+
     const reading = normalized.data;
     try {
-        const [result] = await pool.execute(
-            `INSERT INTO leituras
-                (dispositivo_id, consumo_agua_litros, vazao_l_min, potencia_w, energia_kwh, tensao_v)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-                reading.dispositivo_id, reading.consumo_agua_litros, reading.vazao_l_min,
-                reading.potencia_w, reading.energia_kwh, reading.tensao_v
-            ]
-        );
+        const docData = {
+            ...reading,
+            criado_em: FieldValue.serverTimestamp()
+        };
+
+        const docRef = await db.collection("leituras").add(docData);
 
         return res.status(201).json({
             sucesso: true,
-            mensagem: "Leitura salva no MySQL.",
-            id: result.insertId,
+            mensagem: "Leitura salva no Firebase Firestore.",
+            id: docRef.id,
             dados: reading
         });
     } catch (error) {
-        console.error("[API] Erro ao salvar leitura:", error.message);
+        console.error("[API] Erro ao salvar leitura no Firestore:", error.message);
         return res.status(503).json({
             sucesso: false,
-            mensagem: "Nao foi possivel salvar a leitura. Confira a conexao e a tabela leituras."
+            mensagem: "Nao foi possivel salvar a leitura no Firebase Firestore."
         });
     }
 });
 
+// Dashboard: Ultima leitura e historico recente
 app.get("/api/dashboard", async (req, res) => {
+    if (!db) {
+        return res.status(503).json({ sucesso: false, mensagem: "Firebase nao conectado." });
+    }
+
     const deviceId = typeof req.query.dispositivo_id === "string"
         ? req.query.dispositivo_id
         : DEFAULT_DEVICE_ID;
 
     try {
-        const [latestRows] = await pool.execute(
-            `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
-                    potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC LIMIT 1`,
-            [deviceId]
-        );
-        const [historyRows] = await pool.execute(
-            `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
-                    potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC LIMIT 30`,
-            [deviceId]
-        );
+        const snapshot = await db.collection("leituras")
+            .where("dispositivo_id", "==", deviceId)
+            .orderBy("criado_em", "desc")
+            .limit(30)
+            .get();
+
+        const docs = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                criado_em: data.criado_em ? data.criado_em.toDate().toISOString() : new Date().toISOString()
+            };
+        });
+
+        const ultima_leitura = docs.length > 0 ? docs[0] : null;
+        const historico_recente = [...docs].reverse();
 
         return res.status(200).json({
             sucesso: true,
             dispositivo_id: deviceId,
-            ultima_leitura: latestRows[0] || null,
-            historico_recente: historyRows.reverse()
+            ultima_leitura,
+            historico_recente
         });
     } catch (error) {
-        console.error("[API] Erro ao consultar dashboard:", error.message);
+        console.error("[API] Erro ao consultar dashboard no Firestore:", error.message);
         return res.status(503).json({
             sucesso: false,
-            mensagem: "Nao foi possivel consultar os dados no MySQL."
+            mensagem: "Nao foi possivel consultar os dados no Firebase."
         });
     }
 });
 
+// Historico completo
 app.get("/api/historico", async (req, res) => {
+    if (!db) {
+        return res.status(503).json({ sucesso: false, mensagem: "Firebase nao conectado." });
+    }
+
     const deviceId = typeof req.query.dispositivo_id === "string"
         ? req.query.dispositivo_id
         : DEFAULT_DEVICE_ID;
+
     const requestedLimit = Number.parseInt(req.query.limite, 10);
     const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 500) : 100;
 
     try {
-        const [rows] = await pool.execute(
-            `SELECT id, dispositivo_id, consumo_agua_litros, vazao_l_min,
-                    potencia_w, energia_kwh, tensao_v, criado_em
-             FROM leituras WHERE dispositivo_id = ?
-             ORDER BY criado_em DESC, id DESC LIMIT ?`,
-            [deviceId, limit]
-        );
+        const snapshot = await db.collection("leituras")
+            .where("dispositivo_id", "==", deviceId)
+            .orderBy("criado_em", "desc")
+            .limit(limit)
+            .get();
+
+        const docs = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                criado_em: data.criado_em ? data.criado_em.toDate().toISOString() : new Date().toISOString()
+            };
+        });
+
         return res.status(200).json({
             sucesso: true,
             dispositivo_id: deviceId,
-            quantidade: rows.length,
-            dados: rows
+            quantidade: docs.length,
+            dados: docs
         });
     } catch (error) {
-        console.error("[API] Erro ao consultar historico:", error.message);
+        console.error("[API] Erro ao consultar historico no Firestore:", error.message);
         return res.status(503).json({
             sucesso: false,
-            mensagem: "Nao foi possivel consultar o historico no MySQL."
+            mensagem: "Nao foi possivel consultar o historico no Firebase."
         });
     }
 });
@@ -211,12 +259,11 @@ app.use((err, req, res, next) => {
 
 const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[API] HomeWise rodando na porta ${PORT}`);
-    console.log(`[API] Banco configurado: ${process.env.DB_NAME || "homewise"}`);
+    console.log(`[API] Armazenamento: Firebase Cloud Firestore`);
 });
 
 async function shutdown() {
-    server.close(async () => {
-        await pool.end();
+    server.close(() => {
         process.exit(0);
     });
 }
