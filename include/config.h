@@ -10,12 +10,12 @@ constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
 
 // Configure o IP do computador que executa a API na mesma rede Wi-Fi.
 // Nao use localhost aqui: localhost apontaria para o proprio ESP8266.
-constexpr char HOMEWISE_API_URL[] = "http://192.168.1.100:3000/api/dados";
+constexpr char HOMEWISE_API_URL[] = "http://192.168.137.1:3000/api/dados";
 
-// Sensor de vazao YF-S201
+// Sensor de vazao YF-S201 (Calibrado experimentalmente: 161 pulsos / 0.4L = 402.5)
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
 constexpr unsigned long WATER_PULSES_PER_EVENT = 1UL;
-constexpr float WATER_PULSES_PER_LITER = 450.0f;
+constexpr float WATER_PULSES_PER_LITER = 402.5f;
 constexpr unsigned long WATER_FLOW_READ_INTERVAL_MS = 1000UL;
 
 // PZEM-004T v3 usando SoftwareSerial.
@@ -34,13 +34,14 @@ constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
 // Historico e analise
 constexpr int HISTORY_MAX_DAYS = 31;
 constexpr int SIMULATED_DAYS_IN_MONTH = 30;
-constexpr unsigned long SIMULATED_DAY_DURATION_MS = 10000UL;
+// Em teste fisico, mantemos o dia longo para NAO zerar o contador no meio do despejo
+constexpr unsigned long SIMULATED_DAY_DURATION_MS = 86400000UL; // 24 horas
 constexpr float ABNORMAL_CONSUMPTION_FACTOR = 1.20f;
 
 // Temporizacao
 constexpr unsigned long SERIAL_BAUD = 115200UL;
 constexpr unsigned long ENERGY_READ_INTERVAL_MS = 1000UL;
-constexpr unsigned long REPORT_INTERVAL_MS = 2000UL;
+constexpr unsigned long REPORT_INTERVAL_MS = 800UL;
 constexpr unsigned long DISPLAY_INTERVAL_MS = 300UL;
 constexpr unsigned long API_SEND_INTERVAL_MS = 5000UL;
 

@@ -39,7 +39,6 @@ void atualizarComunicacao() {
     const unsigned long agora = millis();
 
     if (agora - ultimaTentativaWiFi >= WIFI_RECONNECT_INTERVAL_MS) {
-        Serial.println("[COMUNICACAO] Tentando reconectar ao Wi-Fi...");
         WiFi.disconnect();
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
         ultimaTentativaWiFi = agora;
