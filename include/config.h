@@ -5,12 +5,16 @@
 
 // Controlador: LOLIN NodeMCU V3 (ESP8266)
 
-// Identificador enviado à API.
+// Identificador enviado ao Firebase Firestore.
 constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
 
-// Configure o IP do computador que executa a API na mesma rede Wi-Fi.
-// Nao use localhost aqui: localhost apontaria para o proprio ESP8266.
-constexpr char HOMEWISE_API_URL[] = "http://192.168.137.1:3000/api/dados";
+// Configuracao do Google Firebase Firestore (Nuvem)
+// Conexao HTTPS direta com a REST API da Google Cloud.
+// Isso elimina a necessidade de ter um computador ligado na rede local.
+constexpr char FIREBASE_PROJECT_ID[] = "homewise-65bb1";
+constexpr char FIREBASE_API_KEY[] = "AIzaSyArdNHN_NkjKYtqo2M0_t5Rg1ot6_lBO38";
+constexpr char FIREBASE_FIRESTORE_URL[] =
+    "https://firestore.googleapis.com/v1/projects/homewise-65bb1/databases/(default)/documents/leituras?key=AIzaSyArdNHN_NkjKYtqo2M0_t5Rg1ot6_lBO38";
 
 // Sensor de vazao YF-S201 (Calibrado experimentalmente: 161 pulsos / 0.4L = 402.5)
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
@@ -43,6 +47,7 @@ constexpr unsigned long SERIAL_BAUD = 115200UL;
 constexpr unsigned long ENERGY_READ_INTERVAL_MS = 1000UL;
 constexpr unsigned long REPORT_INTERVAL_MS = 800UL;
 constexpr unsigned long DISPLAY_INTERVAL_MS = 300UL;
-constexpr unsigned long API_SEND_INTERVAL_MS = 5000UL;
+// Envio periodico a cada 10s: max 8.640 escritas/dia (plano Spark do Firebase permite 20.000)
+constexpr unsigned long API_SEND_INTERVAL_MS = 10000UL;
 
 #endif
