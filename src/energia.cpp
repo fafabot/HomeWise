@@ -18,6 +18,7 @@ static float energiaTotalKWh = 0.0f;
 static float energiaBaseKWh = 0.0f;
 static bool baseEnergiaInicializada = false;
 static unsigned long ultimaLeitura = 0;
+static bool comunicando = false;
 
 void iniciarEnergia() {
     pzemSerial.begin(9600);
@@ -30,6 +31,7 @@ void iniciarEnergia() {
     energiaBaseKWh = 0.0f;
     baseEnergiaInicializada = false;
     ultimaLeitura = 0;
+    comunicando = false;
 }
 
 void atualizarEnergia() {
@@ -45,26 +47,28 @@ void atualizarEnergia() {
     const float novaPotencia = pzem.power();
     const float novaEnergiaTotal = pzem.energy();
 
-    if (isnan(novaTensao) || isnan(novaCorrente) ||
-        isnan(novaPotencia) || isnan(novaEnergiaTotal)) {
-        // Mantem a ultima leitura valida quando o PZEM falhar temporariamente.
+    if (isnan(novaTensao)) {
+        comunicando = false;
         return;
     }
 
+    comunicando = true;
     tensao = novaTensao;
-    corrente = novaCorrente;
-    potencia = novaPotencia;
-    energiaTotalKWh = novaEnergiaTotal;
+    corrente = isnan(novaCorrente) ? 0.0f : novaCorrente;
+    potencia = isnan(novaPotencia) ? 0.0f : novaPotencia;
 
-    if (!baseEnergiaInicializada) {
-        energiaBaseKWh = energiaTotalKWh;
-        baseEnergiaInicializada = true;
-    }
+    if (!isnan(novaEnergiaTotal)) {
+        energiaTotalKWh = novaEnergiaTotal;
+        if (!baseEnergiaInicializada) {
+            energiaBaseKWh = energiaTotalKWh;
+            baseEnergiaInicializada = true;
+        }
 
-    energia = energiaTotalKWh - energiaBaseKWh;
-    if (energia < 0.0f) {
-        energiaBaseKWh = energiaTotalKWh;
-        energia = 0.0f;
+        energia = energiaTotalKWh - energiaBaseKWh;
+        if (energia < 0.0f) {
+            energiaBaseKWh = energiaTotalKWh;
+            energia = 0.0f;
+        }
     }
 }
 
@@ -73,6 +77,7 @@ float obterCorrente() { return corrente; }
 float obterPotencia() { return potencia; }
 float obterEnergia() { return energia; }
 bool cargaLigada() { return potencia > 1.0f; }
+bool pzemComunicando() { return comunicando; }
 
 void resetarConsumoDiarioEnergia() {
     if (baseEnergiaInicializada) {

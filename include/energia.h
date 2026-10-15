@@ -9,6 +9,7 @@ float obterCorrente();
 float obterPotencia();
 float obterEnergia();
 bool cargaLigada();
+bool pzemComunicando();
 
 void resetarConsumoDiarioEnergia();
 

@@ -13,6 +13,7 @@ static unsigned long momentoUltimoPulso = 0;
 static bool emDespejo = false;
 static bool relatorioExibido = false;
 static unsigned long ultimoPrintFluxo = 0;
+static unsigned long ultimoPrintEnergia = 0;
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
@@ -20,20 +21,19 @@ void setup() {
 
     Serial.println();
     Serial.println("==============================================================");
-    Serial.println("           HOMEWISE - MONITORAMENTO DE VAZAO DE AGUA          ");
-    Serial.println("        Placa: LOLIN NodeMCU V3 (ESP8266) | Pino: D5          ");
+    Serial.println("          HOMEWISE - MONITORAMENTO DE AGUA E ENERGIA          ");
+    Serial.println("      NodeMCU V3 (ESP8266) | Agua: D5 | PZEM: D6/D7 (UART)    ");
     Serial.println("==============================================================");
-    Serial.print  (">> FATOR DE CALIBRACAO ATIVO: ");
+    Serial.println(">> SENSORES CONFIGURADOS:");
+    Serial.print  ("   - Sensor YF-S201 (Agua): Pino D5 | Calibracao: ");
     Serial.print  (WATER_PULSES_PER_LITER, 1);
-    Serial.println(" pulsos/Litro");
-    Serial.println(">> INSTRUCOES:");
-    Serial.println("   1. O contador inicia zerado.");
-    Serial.println("   2. Despeje os 400 ml de agua no funil.");
-    Serial.println("   3. As leituras serao exibidas em tempo real.");
-    Serial.println("   4. Quando a agua parar, o relatorio final sera impresso.");
-    Serial.println("   5. Digite 'r' e aperte Enter para ZERAR a qualquer momento.");
+    Serial.println(" pulsos/L");
+    Serial.println("   - Medidor PZEM-004T (Energia): D6 (RX/ESP) e D7 (TX/ESP)");
+    Serial.println(">> COMANDOS SERIAL:");
+    Serial.println("   - 'r' + Enter : Zera contador de agua e energia.");
+    Serial.println("   - 'p' + Enter : Imprime medicao imediata do PZEM.");
     Serial.println("==============================================================");
-    Serial.println(">> Aguardando fluxo de agua...\n");
+    Serial.println(">> Sistema iniciado. Monitorando...\n");
 
     iniciarAgua();
     iniciarEnergia();
@@ -45,6 +45,8 @@ void setup() {
     momentoUltimoPulso = millis();
     emDespejo = false;
     relatorioExibido = false;
+    ultimoPrintFluxo = 0;
+    ultimoPrintEnergia = 0;
 }
 
 void loop() {
@@ -56,18 +58,34 @@ void loop() {
     const unsigned long pulsosAtuais = obterPulsos();
     const unsigned long agora = millis();
 
-    // 1. Comando Serial para zerar
+    // 1. Comandos recebidos via Monitor Serial
     if (Serial.available() > 0) {
         char c = Serial.read();
         if (c == 'r' || c == 'R') {
             resetarConsumoDiarioAgua();
+            resetarConsumoDiarioEnergia();
             ultimosPulsos = 0;
             momentoUltimoPulso = agora;
             emDespejo = false;
             relatorioExibido = false;
             Serial.println();
             Serial.println("--------------------------------------------------------------");
-            Serial.println(">> [ZERADO] Contador resetado para 0! Pronto para novo teste.");
+            Serial.println(">> [ZERADO] Contador de agua e acumulado de energia resetados!");
+            Serial.println("--------------------------------------------------------------\n");
+        } else if (c == 'p' || c == 'P') {
+            Serial.println();
+            Serial.println("--------------------------------------------------------------");
+            Serial.println(">> [LEITURA MANUAL PZEM-004T v3]:");
+            if (pzemComunicando()) {
+                Serial.print("   Tensao   : "); Serial.print(obterTensao(), 1); Serial.println(" V");
+                Serial.print("   Corrente : "); Serial.print(obterCorrente(), 3); Serial.println(" A");
+                Serial.print("   Potencia : "); Serial.print(obterPotencia(), 1); Serial.println(" W");
+                Serial.print("   Energia  : "); Serial.print(obterEnergia(), 4); Serial.println(" kWh");
+            } else {
+                Serial.println("   Status   : SEM COMUNICACAO COM O PZEM.");
+                Serial.println("   Dica     : O PZEM precisa estar conectado na tomada AC 127/220V");
+                Serial.println("              para o chip interno ligar e responder pela serial!");
+            }
             Serial.println("--------------------------------------------------------------\n");
         }
     }
@@ -80,14 +98,14 @@ void loop() {
         if (!emDespejo) {
             emDespejo = true;
             relatorioExibido = false;
-            Serial.println(">> [INICIO] Fluxo detectado! Despejando...");
+            Serial.println(">> [AGUA - INICIO] Fluxo detectado! Despejando...");
         }
 
-        // Imprime o progresso a cada 400ms durante o despejo
+        // Imprime o progresso da agua a cada 400ms durante o despejo
         if (agora - ultimoPrintFluxo >= 400) {
             ultimoPrintFluxo = agora;
             const float ml = obterLitros() * 1000.0f;
-            Serial.print("   -> Pulsos: ");
+            Serial.print("   -> [AGUA] Pulsos: ");
             if (pulsosAtuais < 100) Serial.print(" ");
             Serial.print(pulsosAtuais);
             Serial.print("  |  Volume: ");
@@ -98,7 +116,7 @@ void loop() {
         }
     }
 
-    // 3. Deteccao de fim de fluxo (agua parou por 2 segundos apos o despejo)
+    // 3. Fim do fluxo de agua (2 segundos sem pulsos apos o despejo)
     if (emDespejo && !relatorioExibido && (agora - momentoUltimoPulso >= 2000)) {
         emDespejo = false;
         relatorioExibido = true;
@@ -108,8 +126,9 @@ void loop() {
 
         Serial.println();
         Serial.println("==============================================================");
-        Serial.println("                  RELATORIO FINAL DA MEDICAO                  ");
+        Serial.println("                 RELATORIO CONSOLIDADO DE MEDICAO             ");
         Serial.println("==============================================================");
+        Serial.println(">> CONSUMO DE AGUA:");
         Serial.print  ("   Total de Pulsos : ");
         Serial.print  (pulsosAtuais);
         Serial.println(" pulsos");
@@ -118,11 +137,38 @@ void loop() {
         Serial.print  (" mL  (");
         Serial.print  (litros, 3);
         Serial.println(" L)");
-        Serial.print  ("   Fator Utilizado : ");
+        Serial.print  ("   Fator Calibrado : ");
         Serial.print  (WATER_PULSES_PER_LITER, 1);
         Serial.println(" pulsos/L");
+        Serial.println(">> CONSUMO DE ENERGIA:");
+        if (pzemComunicando()) {
+            Serial.print("   Tensao da Rede  : "); Serial.print(obterTensao(), 1); Serial.println(" V");
+            Serial.print("   Corrente        : "); Serial.print(obterCorrente(), 2); Serial.println(" A");
+            Serial.print("   Potencia Ativa  : "); Serial.print(obterPotencia(), 1); Serial.println(" W");
+            Serial.print("   Energia         : "); Serial.print(obterEnergia(), 4); Serial.println(" kWh");
+        } else {
+            Serial.println("   PZEM nao comunicando no momento.");
+        }
         Serial.println("==============================================================");
-        Serial.println(">> Teste concluido! Envie 'r' para zerar e testar novamente.\n");
+        Serial.println(">> Envie 'r' para zerar tudo ou 'p' para ler a energia.\n");
+    }
+
+    // 4. Medicao periodica de energia (a cada 2 segundos quando nao estiver despejando agua)
+    if (!emDespejo && (agora - ultimoPrintEnergia >= 2000)) {
+        ultimoPrintEnergia = agora;
+        if (pzemComunicando()) {
+            Serial.print("[ENERGIA] Tensao: ");
+            Serial.print(obterTensao(), 1);
+            Serial.print(" V  |  Corrente: ");
+            Serial.print(obterCorrente(), 2);
+            Serial.print(" A  |  Potencia: ");
+            Serial.print(obterPotencia(), 1);
+            Serial.print(" W  |  Energia: ");
+            Serial.print(obterEnergia(), 4);
+            Serial.println(" kWh");
+        } else {
+            Serial.println("[ENERGIA] Aguardando PZEM... (Conecte 5V/VIN, D6/D7 e a tomada AC 127/220V)");
+        }
     }
 
     delay(10);
