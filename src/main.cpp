@@ -22,13 +22,13 @@ void setup() {
     Serial.println();
     Serial.println("==============================================================");
     Serial.println("          HOMEWISE - MONITORAMENTO DE AGUA E ENERGIA          ");
-    Serial.println("      NodeMCU V3 (ESP8266) | Agua: D5 | PZEM: D6/D7 (UART)    ");
+    Serial.println("      WeMos D1 R1 (ESP8266) | Agua: D5 | PZEM: D6/D7 (UART)   ");
     Serial.println("==============================================================");
     Serial.println(">> SENSORES CONFIGURADOS:");
-    Serial.print  ("   - Sensor YF-S201 (Agua): Pino D5 | Calibracao: ");
+    Serial.print  ("   - Sensor YF-S201 (Agua): Pino D5 (GPIO14) | Calibracao: ");
     Serial.print  (WATER_PULSES_PER_LITER, 1);
     Serial.println(" pulsos/L");
-    Serial.println("   - Medidor PZEM-004T (Energia): D6 (RX/ESP) e D7 (TX/ESP)");
+    Serial.println("   - Medidor PZEM-004T (Energia): D6/GPIO12 (RX) e D7/GPIO13 (TX)");
     Serial.println(">> COMANDOS SERIAL:");
     Serial.println("   - 'r' + Enter : Zera contador de agua e energia.");
     Serial.println("   - 'p' + Enter : Imprime medicao imediata do PZEM.");

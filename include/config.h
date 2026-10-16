@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-// Controlador: LOLIN NodeMCU V3 (ESP8266)
+// Controlador: WeMos D1 R1 (ESP8266)
 
 // Identificador enviado ao Firebase Firestore.
 constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
@@ -15,19 +15,22 @@ constexpr char FIREBASE_PROJECT_ID[] = "homewise-65bb1";
 // A chave FIREBASE_API_KEY fica isolada em include/credenciais.h (protegida pelo .gitignore)
 
 // Sensor de vazao YF-S201 (Calibrado experimentalmente: 161 pulsos / 0.4L = 402.5)
+// Na WeMos D1 R1: pino identificado como D5 (ou D13/SCK) = GPIO14
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
 constexpr unsigned long WATER_PULSES_PER_EVENT = 1UL;
 constexpr float WATER_PULSES_PER_LITER = 402.5f;
 constexpr unsigned long WATER_FLOW_READ_INTERVAL_MS = 1000UL;
 
 // PZEM-004T v3 usando SoftwareSerial.
+// Na WeMos D1 R1: D6 (ou D12/MISO) = GPIO12 | D7 (ou D11/MOSI) = GPIO13
 // TX do PZEM -> D6/RX do ESP8266; RX do PZEM <- D7/TX do ESP8266.
 constexpr uint8_t PZEM_RX_PIN = D6;  // GPIO12
 constexpr uint8_t PZEM_TX_PIN = D7;  // GPIO13
 
 // OLED SSD1306 I2C
-constexpr uint8_t OLED_SDA_PIN = D2;  // GPIO4
-constexpr uint8_t OLED_SCL_PIN = D1;  // GPIO5
+// Na WeMos D1 R1: SDA = GPIO4 (pino D4 ou D14/SDA) e SCL = GPIO5 (pino D3 ou D15/SCL)
+constexpr uint8_t OLED_SDA_PIN = SDA;  // GPIO4 (D4 / D14)
+constexpr uint8_t OLED_SCL_PIN = SCL;  // GPIO5 (D3 / D15)
 constexpr int OLED_WIDTH = 128;
 constexpr int OLED_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
