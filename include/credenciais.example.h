@@ -11,3 +11,4 @@ constexpr char WIFI_PASSWORD[] = "SUA_SENHA_WIFI";
 constexpr char FIREBASE_API_KEY[] = "SUA_API_KEY_DO_FIREBASE";
 
 #endif
+
