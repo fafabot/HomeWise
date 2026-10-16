@@ -12,9 +12,7 @@ constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
 // Conexao HTTPS direta com a REST API da Google Cloud.
 // Isso elimina a necessidade de ter um computador ligado na rede local.
 constexpr char FIREBASE_PROJECT_ID[] = "homewise-65bb1";
-constexpr char FIREBASE_API_KEY[] = "AIzaSyArdNHN_NkjKYtqo2M0_t5Rg1ot6_lBO38";
-constexpr char FIREBASE_FIRESTORE_URL[] =
-    "https://firestore.googleapis.com/v1/projects/homewise-65bb1/databases/(default)/documents/leituras?key=AIzaSyArdNHN_NkjKYtqo2M0_t5Rg1ot6_lBO38";
+// A chave FIREBASE_API_KEY fica isolada em include/credenciais.h (protegida pelo .gitignore)
 
 // Sensor de vazao YF-S201 (Calibrado experimentalmente: 161 pulsos / 0.4L = 402.5)
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14

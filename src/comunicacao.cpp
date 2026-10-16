@@ -113,7 +113,12 @@ void enviarDadosAPI() {
     HTTPClient http;
     http.setTimeout(10000); // 10s de timeout para negociacao TLS e envio
 
-    if (!http.begin(*client, FIREBASE_FIRESTORE_URL)) {
+    const String firestoreUrl = String("https://firestore.googleapis.com/v1/projects/") +
+                               FIREBASE_PROJECT_ID +
+                               "/databases/(default)/documents/leituras?key=" +
+                               FIREBASE_API_KEY;
+
+    if (!http.begin(*client, firestoreUrl)) {
         Serial.println("[COMUNICACAO] ERRO: Nao foi possivel iniciar conexao HTTPS.");
         return;
     }
