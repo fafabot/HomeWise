@@ -8,7 +8,13 @@
 #include "agua.h"
 #include "comunicacao.h"
 #include "config.h"
+
+#if __has_include("credenciais.h")
 #include "credenciais.h"
+#elif __has_include("credenciais.example.h")
+#include "credenciais.example.h"
+#endif
+
 #include "energia.h"
 
 static unsigned long ultimaTentativaWiFi = 0;
