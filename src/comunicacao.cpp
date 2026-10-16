@@ -77,6 +77,12 @@ void enviarDadosAPI() {
     if (agora - ultimoEnvioAPI < API_SEND_INTERVAL_MS) {
         return;
     }
+
+    // Aguarda sincronizacao do relogio NTP para garantir data e hora reais na nuvem
+    if (time(nullptr) < 1735689600) {
+        return;
+    }
+
     ultimoEnvioAPI = agora;
 
     // Monta o documento no formato nativo da Firestore REST API
@@ -102,6 +108,7 @@ void enviarDadosAPI() {
     // Cliente seguro HTTPS (BearSSL) do ESP8266
     std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
     client->setInsecure(); // Permite negociar TLS com a Google sem hardcode de certificados CA
+    client->setBufferSizes(1024, 512); // Economiza ~20KB de RAM limitando buffers de SSL
 
     HTTPClient http;
     http.setTimeout(10000); // 10s de timeout para negociacao TLS e envio
