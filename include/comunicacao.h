@@ -5,5 +5,6 @@ void iniciarComunicacao();
 void atualizarComunicacao();
 bool wifiConectado();
 void enviarDadosAPI();
+int obterLeiturasPendentesOffline();
 
 #endif

@@ -10,9 +10,9 @@ A HomeWise monitora o consumo residencial de agua e energia. O controlador do pr
 - Leitura do PZEM-004T v3 por SoftwareSerial.
 - Exibicao das leituras no OLED SSD1306 e no Monitor Serial.
 - Historico e analise locais em memoria RAM, com dia acelerado para testes.
-- Firmware preparado para enviar leituras reais via Wi-Fi/HTTP.
-- API Node.js/Express com persistencia MySQL e rotas de consulta.
-- Dashboard web responsivo; **a interface ainda usa dados demonstrativos** e sera ligada a API em uma etapa posterior.
+- Firmware preparado para enviar leituras reais via Wi-Fi/HTTPS diretamente ao Firebase Cloud Firestore (com fila de recuperacao offline).
+- API Node.js/Express com validacao e persistencia no Cloud Firestore e rotas de consulta.
+- Aplicativo mobile multiplataforma (React Native / Expo) com sincronizacao em tempo real e exportacao de relatorios CSV.
 
 ## Controlador e PlatformIO
 
@@ -77,9 +77,9 @@ Para configurar banco, variaveis de ambiente e rotas, siga o [guia da API](api/R
 
 Sem o PZEM respondendo, os valores eletricos podem permanecer na ultima leitura valida ou no valor inicial zero.
 
-## Interface web
+## Aplicativo Mobile e Exportacao de Relatorios
 
-O dashboard esta na pasta [web](web). Foi criado com HTML, CSS e JavaScript puros e pode ser aberto diretamente em web/index.html ou com a extensao Live Server do VS Code. A interface inclui graficos, metas, alertas, historico e exportacao CSV. Os valores continuam demonstrativos ate a integracao do frontend com a API ser concluida.
+O acompanhamento em tempo real, graficos por periodo, alertas, metas e exportacao de relatorios CSV sao realizados diretamente pelo aplicativo **HomeWise Mobile** (`HomeWise-Mobile/HomeWiseMobile`), conectado ao Google Cloud Firestore.
 
 ## Seguranca eletrica
 

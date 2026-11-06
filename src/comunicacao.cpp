@@ -22,6 +22,39 @@ static unsigned long ultimoEnvioAPI = 0;
 static bool conexaoRegistrada = false;
 
 constexpr unsigned long WIFI_RECONNECT_INTERVAL_MS = 10000UL;
+constexpr int MAX_FILA_OFFLINE = 10;
+
+struct LeituraBufferOffline {
+    float consumoAguaLitros;
+    float vazaoLMin;
+    float potenciaW;
+    float energiaKwh;
+    float tensaoV;
+    char criadoEm[25];
+};
+
+static LeituraBufferOffline filaOffline[MAX_FILA_OFFLINE];
+static int inicioFila = 0;
+static int quantidadeFila = 0;
+
+static void enfileirarLeituraOffline(const LeituraBufferOffline& item) {
+    if (quantidadeFila < MAX_FILA_OFFLINE) {
+        const int indice = (inicioFila + quantidadeFila) % MAX_FILA_OFFLINE;
+        filaOffline[indice] = item;
+        quantidadeFila++;
+    } else {
+        // Fila cheia: substitui a leitura mais antiga mantendo as mais recentes
+        filaOffline[inicioFila] = item;
+        inicioFila = (inicioFila + 1) % MAX_FILA_OFFLINE;
+    }
+    Serial.print("[COMUNICACAO] Leitura armazenada no buffer de recuperacao offline (pendentes: ");
+    Serial.print(quantidadeFila);
+    Serial.println(")");
+}
+
+int obterLeiturasPendentesOffline() {
+    return quantidadeFila;
+}
 
 static String obterDataHoraISO() {
     time_t agora = time(nullptr);
@@ -74,34 +107,18 @@ bool wifiConectado() {
     return WiFi.status() == WL_CONNECTED;
 }
 
-void enviarDadosAPI() {
-    if (!wifiConectado()) {
-        return;
-    }
-
-    const unsigned long agora = millis();
-    if (agora - ultimoEnvioAPI < API_SEND_INTERVAL_MS) {
-        return;
-    }
-
-    // Aguarda sincronizacao do relogio NTP para garantir data e hora reais na nuvem
-    if (time(nullptr) < 1735689600) {
-        return;
-    }
-
-    ultimoEnvioAPI = agora;
-
+static bool transmitirDocumentoFirestore(const LeituraBufferOffline& leitura) {
     // Monta o documento no formato nativo da Firestore REST API
     StaticJsonDocument<768> doc;
     JsonObject fields = doc.createNestedObject("fields");
 
     fields.createNestedObject("dispositivo_id")["stringValue"] = DISPOSITIVO_ID;
-    fields.createNestedObject("consumo_agua_litros")["doubleValue"] = obterLitros();
-    fields.createNestedObject("vazao_l_min")["doubleValue"] = obterVazao();
-    fields.createNestedObject("potencia_w")["doubleValue"] = obterPotencia();
-    fields.createNestedObject("energia_kwh")["doubleValue"] = obterEnergia();
-    fields.createNestedObject("tensao_v")["doubleValue"] = obterTensao();
-    fields.createNestedObject("criado_em")["timestampValue"] = obterDataHoraISO();
+    fields.createNestedObject("consumo_agua_litros")["doubleValue"] = leitura.consumoAguaLitros;
+    fields.createNestedObject("vazao_l_min")["doubleValue"] = leitura.vazaoLMin;
+    fields.createNestedObject("potencia_w")["doubleValue"] = leitura.potenciaW;
+    fields.createNestedObject("energia_kwh")["doubleValue"] = leitura.energiaKwh;
+    fields.createNestedObject("tensao_v")["doubleValue"] = leitura.tensaoV;
+    fields.createNestedObject("criado_em")["timestampValue"] = leitura.criadoEm;
 
     String payload;
     serializeJson(doc, payload);
@@ -126,7 +143,7 @@ void enviarDadosAPI() {
 
     if (!http.begin(*client, firestoreUrl)) {
         Serial.println("[COMUNICACAO] ERRO: Nao foi possivel iniciar conexao HTTPS.");
-        return;
+        return false;
     }
 
     http.addHeader("Content-Type", "application/json");
@@ -135,8 +152,10 @@ void enviarDadosAPI() {
     Serial.print("[COMUNICACAO] Codigo HTTP retornado pelo Firestore: ");
     Serial.println(codigoHTTP);
 
+    bool sucesso = false;
     if (codigoHTTP >= 200 && codigoHTTP < 300) {
         Serial.println("[COMUNICACAO] SUCESSO: Leitura gravada diretamente no Firebase Firestore!");
+        sucesso = true;
     } else if (codigoHTTP > 0) {
         Serial.print("[COMUNICACAO] Resposta da API Firebase: ");
         Serial.println(http.getString());
@@ -146,4 +165,53 @@ void enviarDadosAPI() {
     }
 
     http.end();
+    return sucesso;
+}
+
+void enviarDadosAPI() {
+    const unsigned long agora = millis();
+    if (agora - ultimoEnvioAPI < API_SEND_INTERVAL_MS) {
+        return;
+    }
+
+    ultimoEnvioAPI = agora;
+
+    LeituraBufferOffline leituraAtual;
+    leituraAtual.consumoAguaLitros = obterLitros();
+    leituraAtual.vazaoLMin = obterVazao();
+    leituraAtual.potenciaW = obterPotencia();
+    leituraAtual.energiaKwh = obterEnergia();
+    leituraAtual.tensaoV = obterTensao();
+    String iso = obterDataHoraISO();
+    strncpy(leituraAtual.criadoEm, iso.c_str(), sizeof(leituraAtual.criadoEm) - 1);
+    leituraAtual.criadoEm[sizeof(leituraAtual.criadoEm) - 1] = '\0';
+
+    if (!wifiConectado()) {
+        Serial.println("[COMUNICACAO] Sem Wi-Fi no momento. Executando procedimento de recuperacao (RF10)...");
+        enfileirarLeituraOffline(leituraAtual);
+        return;
+    }
+
+    // Aguarda sincronizacao do relogio NTP para garantir data e hora reais na nuvem
+    if (time(nullptr) < 1735689600) {
+        return;
+    }
+
+    // Descarrega eventual leitura pendente na fila antes da leitura atual
+    if (quantidadeFila > 0) {
+        Serial.print("[COMUNICACAO] Conexao restabelecida! Reenviando leitura pendente (restam ");
+        Serial.print(quantidadeFila);
+        Serial.println(")...");
+        if (transmitirDocumentoFirestore(filaOffline[inicioFila])) {
+            inicioFila = (inicioFila + 1) % MAX_FILA_OFFLINE;
+            quantidadeFila--;
+        } else {
+            enfileirarLeituraOffline(leituraAtual);
+            return;
+        }
+    }
+
+    if (!transmitirDocumentoFirestore(leituraAtual)) {
+        enfileirarLeituraOffline(leituraAtual);
+    }
 }
