@@ -15,8 +15,9 @@ Todas as cotas e furações foram dimensionadas a partir das medidas reais de pa
    - Acomodado no **Berço 3D #06 (`76 x 76 mm`)** a `168 mm` de altura, com o **Clipe 3D #05** segurando o funil acima (`Y = 262 mm`) e `130 mm` livres abaixo para a mangueira desaguar no **Copo Coletor `H2O`** apoiado na base.
 3. **Mini-Protoboard 170 furos (`47 x 35 mm`) + Etiqueta QR Code (`65 x 65 mm`):**
    - Posicionadas logo abaixo da WeMos D1 R1 (`Y = 118 mm` e `Y = 52 mm`), ladeadas por **4 furos passa-cabos redondos de $\varnothing 10\text{ mm}$** para os jumpers entrarem por trás do MDF exatamente como na foto.
-4. **Medidor PZEM-004T v3.0 (`31 x 74 mm`) + Bobina TC 100A (`31 x 47 mm`) + Tomada Fêmea de Sobrepor (`46 x 82 mm`):**
-   - O **Case 3D Laranja #08 (`50 x 96 x 24 mm`)** abriga o PZEM-004T v3.0 e protege os bornes energizados 127V/220V CA, ficando alinhado acima da **Bobina TC 100A** e ao lado da **Tomada Branca de Teste**.
+4. **Medidor PZEM-004T v3.0 com Case Azul Transparente (`37 x 78 x 19 mm`) + Bobina TC 100A Bipartida (`Open-Close CT`, `31 x 47 mm`) + Tomada Fêmea (`46 x 82 mm`):**
+   - O **Case 3D Laranja #08 (`50 x 96 x 25 mm`)** possui **berço escalonado duplo**: a cavidade superior (`38,0 x 79,5 x 19,0 mm`) acomoda o **PZEM-004T v3.0 inteiro com a capinha azul transparente original** (sem precisar desmontá-lo!), enquanto o degrau inferior (`32 x 74 mm`) apoia a base ou aceita a placa nua se desejar, com rasgos de `16 mm` no topo e na base para os cabos AC e serial TTL.
+   - Abaixo dele, a furação de fixação no painel (`X = 324` e `X = 360 mm`, distância de `36 mm`) tem largura ideal para abraçar o corpo de `31 mm` do **TC 100A Aberto (*Open-Close CT*)**.
 
 ---
 

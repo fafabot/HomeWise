@@ -50,21 +50,21 @@ module peca(n) {
     translate([8.5,12,4.5]) cube([3,64,3]); translate([62.5,12,4.5]) cube([3,64,3]);
   }
 
-  // #08 Case Laranja do PZEM-004T v3.0 com Degrau Interno e Rasgos Superior/Inferior para os Fios
+  // #08 Case Laranja do PZEM-004T v3.0 (berco duplo: acomoda o Case Azul Transparente 37x78x19 mm ou a PCB nua 30.5x73.5 mm)
   if (n == "08_suporte_3d_case_pzem004t") union() {
     linear_extrude(height=3.5) difference() {
       hull() { translate([5,5]) circle(r=5,$fn=24); translate([45,5]) circle(r=5,$fn=24); translate([45,91]) circle(r=5,$fn=24); translate([5,91]) circle(r=5,$fn=24); }
       translate([25,18]) circle(r=2.2,$fn=20); translate([25,78]) circle(r=2.2,$fn=20);
     }
-    translate([0,0,3.5]) linear_extrude(height=15) difference() {
+    translate([0,0,3.5]) linear_extrude(height=2.5) difference() {
       hull() { translate([5,5]) circle(r=5,$fn=24); translate([45,5]) circle(r=5,$fn=24); translate([45,91]) circle(r=5,$fn=24); translate([5,91]) circle(r=5,$fn=24); }
       translate([9,11]) square([32,74]);
-      translate([19,-1]) square([12,13]); translate([19,84]) square([12,13]);
+      translate([17,-1]) square([16,13]); translate([17,84]) square([16,13]);
     }
-    translate([0,0,18.5]) linear_extrude(height=4) difference() {
+    translate([0,0,6.0]) linear_extrude(height=19.0) difference() {
       hull() { translate([5,5]) circle(r=5,$fn=24); translate([45,5]) circle(r=5,$fn=24); translate([45,91]) circle(r=5,$fn=24); translate([5,91]) circle(r=5,$fn=24); }
-      translate([5,5]) square([40,86]);
-      translate([19,-1]) square([12,7]); translate([19,90]) square([12,7]);
+      translate([6,8.25]) square([38,79.5]);
+      translate([17,-1]) square([16,10]); translate([17,87]) square([16,10]);
     }
   }
 }
