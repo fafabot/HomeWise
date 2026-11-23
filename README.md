@@ -2,23 +2,23 @@
 
 ## Objetivo
 
-A HomeWise monitora o consumo residencial de agua e energia. O controlador do prototipo fisico e o **LOLIN NodeMCU V3 com ESP8266**, desenvolvido no VS Code com PlatformIO.
+A HomeWise monitora o consumo residencial de agua e energia. O controlador do prototipo fisico e a placa **WeMos D1 R1 com ESP8266**, desenvolvida no VS Code com PlatformIO.
 
 ## Estado atual
 
-- Contagem de pulsos do YF-S201 por interrupcao e calculo inicial de vazao.
-- Leitura do PZEM-004T v3 por SoftwareSerial.
-- Exibicao das leituras no OLED SSD1306 e no Monitor Serial.
-- Historico e analise locais em memoria RAM, com dia acelerado para testes.
+- Contagem de pulsos do YF-S201 por interrupcao (pino D5 / GPIO14) e calculo de vazao (402,5 pulsos/L).
+- Leitura do PZEM-004T v3 por SoftwareSerial (D6 / GPIO12 RX e D7 / GPIO13 TX).
+- Exibicao das leituras e diagnostico em tempo real no Monitor Serial (115200 baud).
+- Historico e analise locais em memoria RAM.
 - Firmware preparado para enviar leituras reais via Wi-Fi/HTTPS diretamente ao Firebase Cloud Firestore (com fila de recuperacao offline).
 - API Node.js/Express com validacao e persistencia no Cloud Firestore e rotas de consulta.
 - Aplicativo mobile multiplataforma (React Native / Expo) com sincronizacao em tempo real e exportacao de relatorios CSV.
 
 ## Controlador e PlatformIO
 
-- Placa: LOLIN NodeMCU V3
+- Placa: WeMos D1 R1
 - Microcontrolador: ESP8266
-- Board ID: nodemcuv2
+- Board ID: d1
 - Monitor Serial: 115200 baud
 
 ## Ligacoes de baixa tensao

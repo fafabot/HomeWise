@@ -21,8 +21,8 @@
 ## 2. Hardware e Esquema Elétrico
 
 ### Microcontrolador
-* **Modelo:** LOLIN NodeMCU V3 (ESP8266-12E), 80 MHz, 80 KB RAM, 4 MB Flash.
-* **Firmware Framework:** Arduino sob PlatformIO (`nodemcuv2`).
+* **Modelo:** WeMos D1 R1 (ESP8266-12E, formato Arduino Uno), 80 MHz, 80 KB RAM, 4 MB Flash.
+* **Firmware Framework:** Arduino sob PlatformIO (`board = d1`).
 
 ### Sensor de Vazão de Água (YF-S201)
 * **Princípio:** Efeito Hall com rotor de pás magnetizado.

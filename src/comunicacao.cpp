@@ -194,6 +194,8 @@ void enviarDadosAPI() {
 
     // Aguarda sincronizacao do relogio NTP para garantir data e hora reais na nuvem
     if (time(nullptr) < 1735689600) {
+        Serial.println("[COMUNICACAO] Aguardando sincronizacao de data/hora via NTP (pool.ntp.org)...");
+        enfileirarLeituraOffline(leituraAtual);
         return;
     }
 
@@ -202,6 +204,11 @@ void enviarDadosAPI() {
         Serial.print("[COMUNICACAO] Conexao restabelecida! Reenviando leitura pendente (restam ");
         Serial.print(quantidadeFila);
         Serial.println(")...");
+        // Se a leitura foi enfileirada antes do NTP sincronizar, atualiza para o timestamp real atual
+        if (strncmp(filaOffline[inicioFila].criadoEm, "2026-10-15T00:00:00Z", 20) == 0) {
+            strncpy(filaOffline[inicioFila].criadoEm, leituraAtual.criadoEm, sizeof(filaOffline[inicioFila].criadoEm) - 1);
+            filaOffline[inicioFila].criadoEm[sizeof(filaOffline[inicioFila].criadoEm) - 1] = '\0';
+        }
         if (transmitirDocumentoFirestore(filaOffline[inicioFila])) {
             inicioFila = (inicioFila + 1) % MAX_FILA_OFFLINE;
             quantidadeFila--;

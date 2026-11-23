@@ -34,4 +34,4 @@ jobs:
           python-version: "3.x"
       - run: pip install platformio
       - run: cp include/credenciais.h.example include/credenciais.h
-      - run: pio run -e nodemcuv2
+      - run: pio run -e d1
