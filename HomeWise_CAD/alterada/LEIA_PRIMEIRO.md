@@ -50,6 +50,7 @@ Todas as medidas foram ajustadas com base no hardware físico real medido e nas 
 - `07_suporte_3d_base_wemos_d1.stl` (`74 × 86 × 11,5 mm`) — colagem no MDF + 4 *standoffs* M3 corrigidos
 - `08_suporte_3d_case_pzem004t.stl` (`50 × 96 × 25 mm`) — colagem no MDF + rasgos `25 mm`
 - `09_pes_niveladores_m3_5x.stl` — 5 pés niveladores rebaixados para as cabeças M3 sob a base
+- `10_adaptador_yfs201_mangueira_6mm_2x.stl` — 2 espigões rosca interna `G1/2"` (`YF-S201`) para mangueira `1/4"` (`~6 mm` interno), entrada + saída
 
 ### C. Montagem e Código-Fonte
 - `HomeWise_parametrico.scad`
