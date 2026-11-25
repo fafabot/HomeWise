@@ -5,7 +5,7 @@ Todas as medidas foram ajustadas com base no hardware físico real medido e nas 
 
 1. **Funil (`bico 6 mm` / `boca 55 mm`) — `#05 Clipe do Funil`:**
    - Centro do furo afastado de `10,5 mm` para **`38,0 mm` da face do painel** (deixa **`10,5 mm` de folga** livre atrás da boca de `55 mm`).
-   - Diâmetro do furo ajustado de `14 mm` para **`Ø 6,8 mm`** para abraçar o bico de `6 mm`.
+   - Diâmetro do furo ajustado para **`Ø 10,6 mm`** para passar a **mangueira de `1/4"`** (`~9,5–10 mm` externo) já vestida no bico do funil.
 2. **Sensor `YF-S201` (`60 × 36 × 35 mm`) — `#06 Berço YF-S201`:**
    - Cavidade interna aprofundada para **`40 × 40 × 36,5 mm`** (antes tinha `23 mm` no STL / `15,5 mm` no SCAD, raso demais para os `35 mm` de espessura do sensor).
    - Berço elevado em pedestal (`16 mm`) para que o eixo do tubo fique em **`38,0 mm` da face do painel**, **coaxial com o funil** e alinhado sobre a área do copo `H2O` na base.
@@ -45,8 +45,8 @@ Todas as medidas foram ajustadas com base no hardware físico real medido e nas 
 - `04_escora_vazada_direita.dxf` (`135 × 175 mm`)
 
 ### B. Impressão 3D em PLA/PETG (Face traseira plana em `Z = 0`, zero suportes necessários)
-- `05_suporte_3d_clipe_funil.stl` (`70 × 16 × 46 mm`) — furo `Ø 6,8 mm` a `38 mm` da parede
-- `06_suporte_3d_berco_yfs201.stl` (`76 × 76 × 60,5 mm`) — cavidade `40 × 40 × 36,5 mm`, eixo a `38 mm`
+- `05_suporte_3d_clipe_funil.stl` (`70 × 16 × 48 mm`) — furo `Ø 10,6 mm` (mangueira `1/4"` no bico) a `38 mm` da parede
+- `06_suporte_3d_berco_yfs201.stl` (`76 × 76 × 60,5 mm`) — cavidade `40 × 40 × 36,5 mm`, eixo a `38 mm` e passagem topo/base de `30 mm` para o sextavado do adaptador `#10`
 - `07_suporte_3d_base_wemos_d1.stl` (`74 × 86 × 11,5 mm`) — colagem no MDF + 4 *standoffs* M3 corrigidos
 - `08_suporte_3d_case_pzem004t.stl` (`50 × 96 × 25 mm`) — colagem no MDF + rasgos `25 mm`
 - `09_pes_niveladores_m3_5x.stl` — 5 pés niveladores rebaixados para as cabeças M3 sob a base

@@ -326,7 +326,7 @@ module peca(n) {
     }
   }
 
-  // #05 Clipe Funil: bico 6 mm (furo d=6.8 mm), centro afastado 38 mm da parede
+  // #05 Clipe Funil: passa mangueira 1/4" (~9.5-10 mm ext.) vestida no bico -> furo d=10.6 mm, centro a 38 mm da parede
   if (n == "05_suporte_3d_clipe_funil") union() {
     difference() {
       linear_extrude(height=4.5) hull() {
@@ -340,16 +340,17 @@ module peca(n) {
     }
     translate([0, 16, 0]) rotate([90, 0, 0]) linear_extrude(height=16) difference() {
       union() {
-        hull() { translate([17, 4.5]) circle(r=2.2, $fn=16); translate([29.2, 37.2]) circle(r=2.5, $fn=16); }
-        hull() { translate([53, 4.5]) circle(r=2.2, $fn=16); translate([40.8, 37.2]) circle(r=2.5, $fn=16); }
-        translate([35, 38]) circle(r=8.0, $fn=36);
+        hull() { translate([17, 4.4]) circle(r=2.2, $fn=16); translate([27.5, 37.2]) circle(r=2.5, $fn=16); }
+        hull() { translate([53, 4.4]) circle(r=2.2, $fn=16); translate([42.5, 37.2]) circle(r=2.5, $fn=16); }
+        translate([35, 38]) circle(r=10.0, $fn=36);
       }
-      translate([35, 38]) circle(r=3.4, $fn=32);
-      translate([0, -10]) square([70, 14.5]);
+      translate([35, 38]) circle(r=5.3, $fn=32);
+      translate([0, -10]) square([70, 14.48]);
     }
   }
 
   // #06 Berco YF-S201: cavidade 40x40x36.5 mm, centro do sensor em 38 mm da parede (coaxial c/ funil!)
+  // Abertura topo/base de 30 mm (X=23..53) para dar passagem livre ao sextavado do adaptador #10!
   if (n == "06_suporte_3d_berco_yfs201") union() {
     difference() {
       linear_extrude(height=4.5) hull() {
@@ -364,22 +365,22 @@ module peca(n) {
       escareado_m4(68, 68, 4.5);
     }
     // Pedestal com cantos suaves (R=2 mm) alinhado as paredes das garras e livre dos 4 furos M4
-    translate([0, 0, 4.5]) linear_extrude(height=16.0) hull() {
+    translate([0, 0, 4.48]) linear_extrude(height=16.04) hull() {
       translate([14.5, 15]) circle(r=2, $fn=16);
       translate([61.5, 15]) circle(r=2, $fn=16);
       translate([61.5, 61]) circle(r=2, $fn=16);
       translate([14.5, 61]) circle(r=2, $fn=16);
     }
-    translate([12.5, 13, 20.5]) cube([5.5, 50, 36.5]);
-    translate([12.5, 13, 20.5]) cube([13.5, 5, 40.0]);
-    translate([12.5, 58, 20.5]) cube([13.5, 5, 40.0]);
-    translate([50, 13, 20.5]) cube([13.5, 5, 40.0]);
-    translate([50, 58, 20.5]) cube([13.5, 5, 40.0]);
-    translate([12.5, 13, 57.0]) cube([10.5, 50, 3.5]);
-    translate([58, 13, 20.5]) cube([5.5, 16, 36.5]);
-    translate([53, 13, 57.0]) cube([10.5, 16, 3.5]);
-    translate([58, 47, 20.5]) cube([5.5, 16, 36.5]);
-    translate([53, 47, 57.0]) cube([10.5, 16, 3.5]);
+    translate([12.5, 13, 20.48]) cube([5.5, 50, 36.54]);
+    translate([12.5, 13, 20.48]) cube([10.5, 5, 40.02]);
+    translate([12.5, 58, 20.48]) cube([10.5, 5, 40.02]);
+    translate([53, 13, 20.48]) cube([10.5, 5, 40.02]);
+    translate([53, 58, 20.48]) cube([10.5, 5, 40.02]);
+    translate([12.5, 13, 56.98]) cube([10.5, 50, 3.52]);
+    translate([58, 13, 20.48]) cube([5.5, 16, 36.54]);
+    translate([53, 13, 56.98]) cube([10.5, 16, 3.52]);
+    translate([58, 47, 20.48]) cube([5.5, 16, 36.54]);
+    translate([53, 47, 56.98]) cube([10.5, 16, 3.52]);
   }
 
   // #07 Base WeMos D1 R1: p/ colar no MDF, 4o standoff corrigido p/ (61.8, 22.2), guias 54.2 mm
@@ -391,23 +392,23 @@ module peca(n) {
       translate([6, 80]) circle(r=6, $fn=24);
     }
     for (pt = [[13.5, 21.0], [18.6, 73.0], [46.5, 73.0], [61.8, 22.2]])
-      translate([pt[0], pt[1], 4.5]) linear_extrude(height=6.0) difference() {
+      translate([pt[0], pt[1], 4.48]) linear_extrude(height=6.02) difference() {
         circle(r=3.8, $fn=24);
         circle(r=1.55, $fn=16);
       }
-    translate([6.9, 10, 4.5]) cube([3.0, 66, 7.0]);
-    translate([64.1, 10, 4.5]) cube([3.0, 66, 7.0]);
+    translate([6.9, 10, 4.48]) cube([3.0, 66, 7.02]);
+    translate([64.1, 10, 4.48]) cube([3.0, 66, 7.02]);
   }
 
   // #08 Case PZEM-004T v3: p/ colar no MDF + rasgos topo/base de 25 mm
   if (n == "08_suporte_3d_case_pzem004t") union() {
-    linear_extrude(height=3.5) hull() {
+    linear_extrude(height=3.52) hull() {
       translate([5, 5]) circle(r=5, $fn=24);
       translate([45, 5]) circle(r=5, $fn=24);
       translate([45, 91]) circle(r=5, $fn=24);
       translate([5, 91]) circle(r=5, $fn=24);
     }
-    translate([0, 0, 3.5]) linear_extrude(height=2.5) difference() {
+    translate([0, 0, 3.5]) linear_extrude(height=2.52) difference() {
       hull() {
         translate([5, 5]) circle(r=5, $fn=24);
         translate([45, 5]) circle(r=5, $fn=24);
