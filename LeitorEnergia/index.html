@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeWise — Monitor de Energia e Água (Telão)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Cabeçalho Superior -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">HW</div>
+        <div>
+          <h1>HomeWise — Monitor em Tempo Real</h1>
+          <p class="subtitle">Recebimento medida por medida • Energia (PZEM-004T) &amp; Água (YF-S201)</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div id="statusBadge" class="status-badge offline">
+          <span class="dot"></span>
+          <span id="statusText">Desconectado</span>
+        </div>
+
+        <button id="btnConectarSerial" class="btn btn-primary" title="Conectar ao ESP8266 via cabo USB (115200 bps)">
+          🔌 Conectar USB (Serial)
+        </button>
+
+        <button id="btnModoFirebase" class="btn btn-secondary" title="Receber leituras via Wi-Fi pelo Firebase Firestore">
+          ☁️ Receber via Firebase
+        </button>
+
+        <button id="btnSimular" class="btn btn-ghost" title="Simular energia contínua no telão">
+          ⚡ Simular Energia
+        </button>
+
+        <button id="btnSimularAgua" class="btn btn-water" title="Simular um despejo de água medida por medida">
+          💧 Simular Despejo
+        </button>
+
+        <button id="btnTelaCheia" class="btn btn-icon" title="Alternar Tela Cheia">
+          ⛶
+        </button>
+      </div>
+    </header>
+
+    <!-- Seletor de Foco para o Telão + Controles do ESP -->
+    <section class="control-strip">
+      <div class="view-tabs" role="tablist" aria-label="Modo de visualização no telão">
+        <button class="tab-btn active" data-view="ambos">📊 Energia + Água</button>
+        <button class="tab-btn" data-view="energia">⚡ Focar Energia</button>
+        <button class="tab-btn" data-view="agua">💧 Focar Água</button>
+      </div>
+
+      <div class="strip-left">
+        <span class="pill" id="pillOrigem">Origem: Aguardando conexão</span>
+        <span class="pill" id="pillContador">0 medidas recebidas</span>
+      </div>
+
+      <div class="strip-actions">
+        <button id="btnLerAgora" class="btn-small" disabled title="Envia comando 'p' para leitura imediata do PZEM">
+          ⚡ Ler PZEM (p)
+        </button>
+        <button id="btnZerarESP" class="btn-small" disabled title="Envia comando 'r' ao ESP8266 para zerar água e energia">
+          ↺ Zerar Contadores (r)
+        </button>
+        <button id="btnPausar" class="btn-small">
+          ⏸ Pausar Lista
+        </button>
+        <button id="btnLimpar" class="btn-small">
+          🗑 Limpar Lista
+        </button>
+      </div>
+    </section>
+
+    <!-- BLOCO 1: ENERGIA ELÉTRICA (PZEM-004T) -->
+    <section id="blocoEnergia" class="resource-block">
+      <div class="section-label label-energy">
+        <span>⚡ ENERGIA ELÉTRICA — PZEM-004T v3.0</span>
+        <span id="pillCarga" class="state-chip">Carga: --</span>
+      </div>
+
+      <div class="cards-grid">
+        <article class="metric-card card-tensao">
+          <div class="metric-header">
+            <span class="metric-title">TENSÃO DA REDE</span>
+            <span class="metric-tag">AC RMS</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valTensao">--</span>
+            <span class="metric-unit">V</span>
+          </div>
+          <p class="metric-foot" id="footTensao">Aguardando medida...</p>
+        </article>
+
+        <article class="metric-card card-corrente">
+          <div class="metric-header">
+            <span class="metric-title">CORRENTE ELÉTRICA</span>
+            <span class="metric-tag">INSTANTÂNEA</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valCorrente">--</span>
+            <span class="metric-unit">A</span>
+          </div>
+          <p class="metric-foot" id="footCorrente">Amperagem ativa</p>
+        </article>
+
+        <article class="metric-card card-potencia">
+          <div class="metric-header">
+            <span class="metric-title">POTÊNCIA ATIVA</span>
+            <span class="metric-tag">CONSUMO</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valPotencia">--</span>
+            <span class="metric-unit">W</span>
+          </div>
+          <p class="metric-foot" id="footPotencia">Pico na sessão: 0,0 W</p>
+        </article>
+
+        <article class="metric-card card-energia">
+          <div class="metric-header">
+            <span class="metric-title">ENERGIA ACUMULADA</span>
+            <span class="metric-tag">MEDIDOR</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valEnergia">--</span>
+            <span class="metric-unit">kWh</span>
+          </div>
+          <p class="metric-foot" id="footEnergia">Acumulado na sessão</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- BLOCO 2: CONSUMO DE ÁGUA (YF-S201) -->
+    <section id="blocoAgua" class="resource-block">
+      <div class="section-label label-water">
+        <span>💧 CONSUMO DE ÁGUA — SENSOR DE VAZÃO YF-S201</span>
+        <span id="pillFluxoAgua" class="state-chip">Fluxo: Parado</span>
+      </div>
+
+      <div class="cards-grid">
+        <article class="metric-card card-agua-vazao">
+          <div class="metric-header">
+            <span class="metric-title">VAZÃO INSTANTÂNEA</span>
+            <span class="metric-tag tag-water">TEMPO REAL</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valVazaoAgua">--</span>
+            <span class="metric-unit">L/min</span>
+          </div>
+          <p class="metric-foot" id="footVazaoAgua">Pico de vazão: 0,00 L/min</p>
+        </article>
+
+        <article class="metric-card card-agua-ml">
+          <div class="metric-header">
+            <span class="metric-title">VOLUME EM MILILITROS</span>
+            <span class="metric-tag tag-water">PRECISÃO</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valVolumeMl">--</span>
+            <span class="metric-unit">mL</span>
+          </div>
+          <p class="metric-foot" id="footVolumeMl">Ideal para conferência em bancada</p>
+        </article>
+
+        <article class="metric-card card-agua-litros">
+          <div class="metric-header">
+            <span class="metric-title">VOLUME ACUMULADO</span>
+            <span class="metric-tag tag-water">TOTAL</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valVolumeLitros">--</span>
+            <span class="metric-unit">L</span>
+          </div>
+          <p class="metric-foot" id="footVolumeLitros">Conversão direta (mL ÷ 1000)</p>
+        </article>
+
+        <article class="metric-card card-agua-pulsos">
+          <div class="metric-header">
+            <span class="metric-title">PULSOS DO SENSOR</span>
+            <span class="metric-tag tag-water">402,5 pulsos/L</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="valPulsosAgua">--</span>
+            <span class="metric-unit">pulsos</span>
+          </div>
+          <p class="metric-foot" id="footPulsosAgua">Pino D5 (GPIO14) • Interrupção</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Tabela de Recebimento Medida por Medida -->
+    <main class="feed-section">
+      <div class="feed-header">
+        <div>
+          <h2>Medidas Recebidas (Medida por Medida)</h2>
+          <p>Cada leitura de Energia (a cada 2s) ou de Água (a cada 400ms durante o fluxo) entra no topo da tabela</p>
+        </div>
+        <span class="last-update" id="txtUltimaHora">Última leitura: --:--:--</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="feed-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Horário</th>
+              <th>Recurso</th>
+              <th>Leitura Principal</th>
+              <th> Secundária / Rede</th>
+              <th>Acumulado</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaMedidas">
+            <tr class="empty-row">
+              <td colspan="7">
+                Nenhuma medida recebida ainda. Conecte via <strong>USB Serial</strong>, <strong>Firebase</strong> ou clique nos botões de <strong>Simular</strong>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Console Serial Bruto (recolhível para mostrar a linha exata do ESP8266 se a banca pedir) -->
+    <details class="raw-console">
+      <summary>Mostrar saída bruta do ESP8266 (Monitor Serial 115200 bps)</summary>
+      <pre id="consoleBruto">Aguardando dados da porta serial...</pre>
+    </details>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

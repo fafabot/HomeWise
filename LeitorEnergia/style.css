@@ -1,0 +1,580 @@
+:root {
+  --bg: #061017;
+  --surface: #0d1d29;
+  --surface-alt: #132838;
+  --border: #1e3a4f;
+  --text: #f1f5f9;
+  --text-sec: #94a3b8;
+  --brand: #22b7d4;
+  --water: #38bdf8;
+  --energy: #f59e0b;
+  --ok: #22c55e;
+  --warn: #eab308;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  padding: 16px 22px;
+}
+
+.app {
+  max-width: 1580px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Cabeçalho */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #22b7d4, #0284c7);
+  color: #041017;
+  font-weight: 900;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.subtitle {
+  color: var(--text-sec);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+}
+
+.status-badge .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.status-badge.offline {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-sec);
+}
+.status-badge.offline .dot {
+  background: var(--text-sec);
+}
+
+.status-badge.online {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.45);
+  color: #4ade80;
+}
+.status-badge.online .dot {
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
+
+.status-badge.waiting {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.45);
+  color: #fde047;
+}
+.status-badge.waiting .dot {
+  background: #eab308;
+}
+
+.btn {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  color: var(--text);
+  background: var(--surface-alt);
+}
+
+.btn:hover {
+  filter: brightness(1.12);
+}
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #041017;
+}
+
+.btn-secondary {
+  background: rgba(34, 183, 212, 0.14);
+  border-color: rgba(34, 183, 212, 0.45);
+  color: var(--brand);
+}
+
+.btn-ghost {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+
+.btn-water {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+}
+
+.btn-icon {
+  padding: 9px 12px;
+  font-size: 15px;
+}
+
+/* Faixa de Controle e Abas de Foco */
+.control-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(13, 29, 41, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 9px 14px;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 6px;
+  background: #07131c;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.tab-btn {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-sec);
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--surface-alt);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.strip-left,
+.strip-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sec);
+}
+
+.btn-small {
+  cursor: pointer;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.btn-small:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-small:not(:disabled):hover {
+  border-color: var(--brand);
+}
+
+/* Blocos de Recurso (Energia e Água) */
+.resource-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.label-energy {
+  color: #fbbf24;
+}
+
+.label-water {
+  color: #38bdf8;
+}
+
+.state-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--text-sec);
+}
+
+/* Cartões Gigantes (Telão) */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1150px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.metric-card.pulse-energy {
+  border-color: #f59e0b;
+}
+
+.metric-card.pulse-water {
+  border-color: #38bdf8;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: var(--text-sec);
+}
+
+.metric-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+}
+
+.metric-tag.tag-water {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+}
+
+.metric-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.metric-value {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1.3px;
+}
+
+/* Quando focado em apenas 1 recurso no telão, deixa os números ainda maiores */
+body.modo-foco .metric-value {
+  font-size: 62px;
+}
+
+.metric-unit {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-sec);
+}
+
+.card-tensao .metric-value {
+  color: #facc15;
+}
+.card-corrente .metric-value {
+  color: #fb923c;
+}
+.card-potencia .metric-value {
+  color: #f59e0b;
+}
+.card-energia .metric-value {
+  color: #4ade80;
+}
+
+.card-agua-vazao .metric-value {
+  color: #38bdf8;
+}
+.card-agua-ml .metric-value {
+  color: #22d3ee;
+}
+.card-agua-litros .metric-value {
+  color: #0ea5e9;
+}
+.card-agua-pulsos .metric-value {
+  color: #a5f3fc;
+}
+
+.metric-foot {
+  font-size: 12px;
+  color: var(--text-sec);
+  font-weight: 600;
+}
+
+/* Tabela Medida por Medida */
+.feed-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.feed-header h2 {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.feed-header p {
+  color: var(--text-sec);
+  font-size: 13px;
+}
+
+.last-update {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.table-wrapper {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.feed-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.feed-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-alt);
+  color: var(--text-sec);
+  text-align: left;
+  padding: 11px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.feed-table td {
+  padding: 11px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(30, 58, 79, 0.55);
+}
+
+.feed-table tbody tr:first-child:not(.empty-row) {
+  background: rgba(34, 183, 212, 0.13);
+}
+
+.feed-table tbody tr.row-consolidado {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.empty-row td {
+  text-align: center;
+  color: var(--text-sec);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 30px 16px;
+}
+
+.tag-recurso {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.recurso-energia {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.recurso-agua {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.badge-estado {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.badge-ativa {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.badge-agua-fluxo {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+.badge-espera {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+/* Console Serial Bruto */
+.raw-console {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px 16px;
+}
+
+.raw-console summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-sec);
+}
+
+.raw-console pre {
+  margin-top: 10px;
+  background: #03090e;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  color: #a5f3fc;
+  max-height: 170px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
