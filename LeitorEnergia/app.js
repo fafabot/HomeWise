@@ -6,7 +6,7 @@
 
 const FIREBASE_PROJECT_ID = 'homewise-65bb1';
 const CENTRAL_PADRAO = 'central_homewise_01';
-const PULSOS_POR_LITRO = 402.5;
+const PULSOS_POR_LITRO = 450.0;
 
 // Elementos gerais
 const statusBadge = document.getElementById('statusBadge');
@@ -60,6 +60,20 @@ let contadorMedidas = 0;
 let picoPotenciaW = 0;
 let picoVazaoLMin = 0;
 let listaPausada = false;
+
+// Controle de tara (offset apenas na Web, sem apagar a medição diária do ESP/Firebase)
+let temLeituraEnergia = false;
+let temLeituraAgua = false;
+let ultimoBrutoEnergiaKwh = 0;
+let ultimoBrutoLitros = 0;
+let ultimoBrutoMl = 0;
+let ultimoBrutoPulsos = 0;
+let taraEnergiaKwh = 0;
+let taraLitros = 0;
+let taraMl = 0;
+let taraPulsos = 0;
+let zerarNaProximaEnergia = false;
+let zerarNaProximaAgua = false;
 
 // Conexões e timers
 let portaSerial = null;
@@ -168,7 +182,20 @@ function registrarMedidaEnergia({ tensaoV, correnteA, potenciaW, energiaKwh, dat
   const c = correnteA !== undefined && correnteA !== null
     ? Number(correnteA)
     : (t > 0 ? p / t : 0);
-  const e = Number(energiaKwh || 0);
+  const brutoE = Number(energiaKwh || 0);
+
+  if (zerarNaProximaEnergia) {
+    taraEnergiaKwh = brutoE;
+    zerarNaProximaEnergia = false;
+  } else if (brutoE < taraEnergiaKwh - 1e-6) {
+    // Caso o ESP8266 tenha reiniciado por conta própria
+    taraEnergiaKwh = 0;
+  }
+
+  ultimoBrutoEnergiaKwh = brutoE;
+  temLeituraEnergia = true;
+
+  const e = Math.max(0, brutoE - taraEnergiaKwh);
   const horaStr = horarioFormatado(dataHora || new Date());
 
   if (p > picoPotenciaW) picoPotenciaW = p;
@@ -191,7 +218,9 @@ function registrarMedidaEnergia({ tensaoV, correnteA, potenciaW, energiaKwh, dat
   const cargaAtiva = p > 1.0;
   footCorrente.textContent = cargaAtiva ? 'Circuito com carga ativa' : 'Corrente de repouso';
   footPotencia.textContent = `Pico na sessão: ${formatarNumero(picoPotenciaW, 1)} W`;
-  footEnergia.textContent = `Atualizado às ${horaStr}`;
+  footEnergia.textContent = taraEnergiaKwh > 0
+    ? `Zerado na web • Dia: ${formatarNumero(brutoE, 4)} kWh`
+    : `Atualizado às ${horaStr}`;
 
   pillCarga.textContent = cargaAtiva ? 'Carga: LIGADA' : 'Carga: Em espera';
   pillCarga.style.color = cargaAtiva ? '#fbbf24' : '#4ade80';
@@ -212,15 +241,36 @@ function registrarMedidaEnergia({ tensaoV, correnteA, potenciaW, energiaKwh, dat
 // Registra uma nova medida de ÁGUA (em fluxo a cada 400ms ou relatório final)
 function registrarMedidaAgua({ vazaoLMin, volumeMl, volumeLitros, pulsos, dataHora, consolidado = false }) {
   const q = Number(vazaoLMin || 0);
-  const ml = volumeMl !== undefined
+  const brutoMl = volumeMl !== undefined
     ? Number(volumeMl)
     : Number(volumeLitros || 0) * 1000;
-  const litros = volumeLitros !== undefined
+  const brutoLitros = volumeLitros !== undefined
     ? Number(volumeLitros)
-    : ml / 1000;
-  const pul = pulsos !== undefined
+    : brutoMl / 1000;
+  const brutoPul = pulsos !== undefined
     ? Math.round(Number(pulsos))
-    : Math.round(litros * PULSOS_POR_LITRO);
+    : Math.round(brutoLitros * PULSOS_POR_LITRO);
+
+  if (zerarNaProximaAgua) {
+    taraMl = brutoMl;
+    taraLitros = brutoLitros;
+    taraPulsos = brutoPul;
+    zerarNaProximaAgua = false;
+  } else if (brutoMl < taraMl - 0.05) {
+    // Caso o ESP8266 tenha reiniciado por conta própria
+    taraMl = 0;
+    taraLitros = 0;
+    taraPulsos = 0;
+  }
+
+  ultimoBrutoMl = brutoMl;
+  ultimoBrutoLitros = brutoLitros;
+  ultimoBrutoPulsos = brutoPul;
+  temLeituraAgua = true;
+
+  const ml = Math.max(0, brutoMl - taraMl);
+  const litros = Math.max(0, brutoLitros - taraLitros);
+  const pul = Math.max(0, brutoPul - taraPulsos);
   const horaStr = horarioFormatado(dataHora || new Date());
 
   if (q > picoVazaoLMin) picoVazaoLMin = q;
@@ -232,8 +282,10 @@ function registrarMedidaAgua({ vazaoLMin, volumeMl, volumeLitros, pulsos, dataHo
 
   footVazaoAgua.textContent = `Pico de vazão: ${formatarNumero(picoVazaoLMin, 2)} L/min`;
   footVolumeMl.textContent = consolidado ? 'Despejo finalizado e consolidado!' : `Atualizado às ${horaStr}`;
-  footVolumeLitros.textContent = `${formatarNumero(ml, 1)} mL medidos`;
-  footPulsosAgua.textContent = `Fator: 402,5 pulsos/L`;
+  footVolumeLitros.textContent = taraLitros > 0
+    ? `Zerado na web • Dia: ${formatarNumero(brutoLitros, 3)} L`
+    : `${formatarNumero(ml, 1)} mL medidos`;
+  footPulsosAgua.textContent = `Fator: 450,0 pulsos/L`;
 
   const emFluxo = !consolidado && q > 0.05;
   pillFluxoAgua.textContent = consolidado
@@ -258,16 +310,66 @@ function registrarMedidaAgua({ vazaoLMin, volumeMl, volumeLitros, pulsos, dataHo
 function zerarVisorLocal() {
   picoPotenciaW = 0;
   picoVazaoLMin = 0;
-  pulsosSimulados = 0;
-  energiaSimuladaKwh = 0;
 
   valEnergia.textContent = '0,0000';
   valVazaoAgua.textContent = '0,00';
   valVolumeMl.textContent = '0,0';
   valVolumeLitros.textContent = '0,000';
   valPulsosAgua.textContent = '0';
-  pillFluxoAgua.textContent = 'Fluxo: Zerado';
+
+  footPotencia.textContent = 'Pico na sessão: 0,0 W';
+  footEnergia.textContent = temLeituraEnergia
+    ? `Zerado na web • Dia: ${formatarNumero(ultimoBrutoEnergiaKwh, 4)} kWh`
+    : 'Zerado na web (aguardando leitura)';
+  footVazaoAgua.textContent = 'Pico de vazão: 0,00 L/min';
+  footVolumeMl.textContent = 'Visor zerado nesta sessão web';
+  footVolumeLitros.textContent = temLeituraAgua
+    ? `Zerado na web • Dia: ${formatarNumero(ultimoBrutoLitros, 3)} L`
+    : 'Zerado na web (aguardando leitura)';
+
+  pillFluxoAgua.textContent = 'Fluxo: Zerado na Web';
   pillFluxoAgua.style.color = '#4ade80';
+
+  pulsarCartoes('.metric-card', 'pulse-water');
+}
+
+// Zera APENAS a visualização web (tara local), preservando a medição do dia no ESP8266 e no Firebase
+function zerarAcumuladoWeb() {
+  if (timerSimEnergia || timerSimAgua) {
+    energiaSimuladaKwh = 0;
+    pulsosSimulados = 0;
+    ultimoBrutoEnergiaKwh = 0;
+    ultimoBrutoLitros = 0;
+    ultimoBrutoMl = 0;
+    ultimoBrutoPulsos = 0;
+    taraEnergiaKwh = 0;
+    taraLitros = 0;
+    taraMl = 0;
+    taraPulsos = 0;
+    zerarNaProximaEnergia = false;
+    zerarNaProximaAgua = false;
+  } else {
+    if (temLeituraEnergia) {
+      taraEnergiaKwh = ultimoBrutoEnergiaKwh;
+      zerarNaProximaEnergia = false;
+    } else {
+      zerarNaProximaEnergia = true;
+    }
+
+    if (temLeituraAgua) {
+      taraLitros = ultimoBrutoLitros;
+      taraMl = ultimoBrutoMl;
+      taraPulsos = ultimoBrutoPulsos;
+      zerarNaProximaAgua = false;
+    } else {
+      zerarNaProximaAgua = true;
+    }
+
+    energiaSimuladaKwh = 0;
+    pulsosSimulados = 0;
+  }
+
+  zerarVisorLocal();
 }
 
 // Interpretador das linhas enviadas pelo firmware HomeWise (src/main.cpp)
@@ -277,8 +379,16 @@ function processarLinhaSerial(linhaBruta) {
 
   anexarConsoleBruto(linha);
 
-  // 0. Reset dos contadores ('r')
+  // 0. Caso alguém tenha zerado diretamente no hardware ('r' pelo terminal externo)
   if (linha.includes('[ZERADO]')) {
+    ultimoBrutoEnergiaKwh = 0;
+    ultimoBrutoLitros = 0;
+    ultimoBrutoMl = 0;
+    ultimoBrutoPulsos = 0;
+    taraEnergiaKwh = 0;
+    taraLitros = 0;
+    taraMl = 0;
+    taraPulsos = 0;
     zerarVisorLocal();
     return;
   }
@@ -407,7 +517,19 @@ async function pararModosAtivos() {
     portaSerial = null;
   }
   btnLerAgora.disabled = true;
-  btnZerarESP.disabled = true;
+}
+
+function resetarBaseAoTrocarFonte() {
+  temLeituraEnergia = false;
+  temLeituraAgua = false;
+  ultimoBrutoEnergiaKwh = 0;
+  ultimoBrutoLitros = 0;
+  ultimoBrutoMl = 0;
+  ultimoBrutoPulsos = 0;
+  taraEnergiaKwh = 0;
+  taraLitros = 0;
+  taraMl = 0;
+  taraPulsos = 0;
 }
 
 // MODO 1: Conexão USB Serial Direta (Web Serial API)
@@ -426,12 +548,12 @@ async function conectarUSBSerial() {
 
   try {
     await pararModosAtivos();
+    resetarBaseAoTrocarFonte();
     portaSerial = await navigator.serial.requestPort();
     await portaSerial.open({ baudRate: 115200 });
 
     btnConectarSerial.textContent = '⏹ Desconectar USB';
     btnLerAgora.disabled = false;
-    btnZerarESP.disabled = false;
     atualizarStatus('online', 'USB Conectado (115200 bps)', 'USB Serial (WeMos D1 R1)');
 
     const decoder = new TextDecoderStream();
@@ -536,6 +658,7 @@ async function alternarModoFirebase() {
   }
 
   await pararModosAtivos();
+  resetarBaseAoTrocarFonte();
   btnConectarSerial.textContent = '🔌 Conectar USB (Serial)';
   btnModoFirebase.textContent = '⏹ Parar Firebase';
   atualizarStatus('online', 'Sincronizado ao Firestore', `Firebase (${CENTRAL_PADRAO})`);
@@ -562,7 +685,10 @@ async function alternarSimulacaoEnergia() {
     return;
   }
 
-  if (portaSerial || timerFirebase) await pararModosAtivos();
+  if (portaSerial || timerFirebase) {
+    await pararModosAtivos();
+    resetarBaseAoTrocarFonte();
+  }
   btnConectarSerial.textContent = '🔌 Conectar USB (Serial)';
   btnSimular.textContent = '⏹ Parar Energia';
   atualizarStatus('online', 'Simulando Sensores no Telão', 'Modo Demonstração');
@@ -590,7 +716,10 @@ async function simularDespejoAgua() {
     return;
   }
 
-  if (portaSerial || timerFirebase) await pararModosAtivos();
+  if (portaSerial || timerFirebase) {
+    await pararModosAtivos();
+    resetarBaseAoTrocarFonte();
+  }
   btnSimularAgua.textContent = '⏹ Parar Despejo';
   atualizarStatus('online', 'Simulando Despejo de Água', 'Modo Demonstração');
 
@@ -655,7 +784,7 @@ btnSimular.addEventListener('click', () => void alternarSimulacaoEnergia());
 btnSimularAgua.addEventListener('click', () => void simularDespejoAgua());
 
 btnLerAgora.addEventListener('click', () => void enviarComandoSerial('p'));
-btnZerarESP.addEventListener('click', () => void enviarComandoSerial('r'));
+btnZerarESP.addEventListener('click', () => zerarAcumuladoWeb());
 
 btnPausar.addEventListener('click', () => {
   listaPausada = !listaPausada;

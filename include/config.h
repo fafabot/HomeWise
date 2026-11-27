@@ -14,11 +14,11 @@ constexpr char DISPOSITIVO_ID[] = "central_homewise_01";
 constexpr char FIREBASE_PROJECT_ID[] = "homewise-65bb1";
 // A chave FIREBASE_API_KEY fica isolada em include/credenciais.h (protegida pelo .gitignore)
 
-// Sensor de vazao YF-S201 (Calibrado experimentalmente: 161 pulsos / 0.4L = 402.5)
+// Sensor de vazao YF-S201 (Calibrado experimentalmente: 90 pulsos / 0.2L = 450.0)
 // Na WeMos D1 R1: pino identificado como D5 (ou D13/SCK) = GPIO14
 constexpr uint8_t WATER_SENSOR_PIN = D5;  // GPIO14
 constexpr unsigned long WATER_PULSES_PER_EVENT = 1UL;
-constexpr float WATER_PULSES_PER_LITER = 402.5f;
+constexpr float WATER_PULSES_PER_LITER = 450.0f;
 constexpr unsigned long WATER_FLOW_READ_INTERVAL_MS = 1000UL;
 
 // PZEM-004T v3 usando SoftwareSerial.

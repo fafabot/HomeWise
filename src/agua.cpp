@@ -69,6 +69,7 @@ void atualizarAgua() {
 }
 
 float obterLitros() {
+    litros = static_cast<float>(copiarPulsosComSeguranca()) / WATER_PULSES_PER_LITER;
     return litros;
 }
 

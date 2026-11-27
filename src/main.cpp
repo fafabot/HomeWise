@@ -50,10 +50,10 @@ void setup() {
 }
 
 void loop() {
-    atualizarAgua();
     atualizarEnergia();
     atualizarComunicacao();
     enviarDadosAPI();
+    atualizarAgua();
 
     const unsigned long pulsosAtuais = obterPulsos();
     const unsigned long agora = millis();
@@ -104,7 +104,7 @@ void loop() {
         // Imprime o progresso da agua a cada 400ms durante o despejo
         if (agora - ultimoPrintFluxo >= 400) {
             ultimoPrintFluxo = agora;
-            const float ml = obterLitros() * 1000.0f;
+            const float ml = (static_cast<float>(pulsosAtuais) / WATER_PULSES_PER_LITER) * 1000.0f;
             Serial.print("   -> [AGUA] Pulsos: ");
             if (pulsosAtuais < 100) Serial.print(" ");
             Serial.print(pulsosAtuais);
@@ -121,7 +121,7 @@ void loop() {
         emDespejo = false;
         relatorioExibido = true;
 
-        const float litros = obterLitros();
+        const float litros = static_cast<float>(pulsosAtuais) / WATER_PULSES_PER_LITER;
         const float ml = litros * 1000.0f;
 
         Serial.println();
